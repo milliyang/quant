@@ -18,9 +18,37 @@ func main() {
 	}
 
 	fmt.Println("file:", *file)
-	instruments := GetInstructmentFromConfigFile(*file)
+	err := parseConfigFile(*file)
+	if err == nil {
+		for _, ins := range Config.Instructments {
+			downloadInstrucment(ins)
+		}
+	}
+}
 
-	for _, ins := range instruments {
-		HttpGet(ins)
+func downloadInstrucment(ins Instructment) {
+	// only the newest seaon ( Now )
+	if Config.DownloadFlag.Type == "recent" {
+		season := getRecentSeason()
+		bars, err := HttpGet(ins, season.Year, season.Quarter)
+		if err != nil {
+			fmt.Println("err:", err.Error())
+		}
+		for _, oneBar := range bars {
+			fmt.Println(oneBar.Date, oneBar.Items)
+		}
+	} else {
+		// update all data from
+		seasons := getAllSeason()
+		JsonPrint(seasons)
+		for _, season := range seasons {
+			bars, err := HttpGet(ins, season.Year, season.Quarter)
+			if err != nil {
+				fmt.Println("err:", err.Error())
+			}
+			for _, oneBar := range bars {
+				fmt.Println(oneBar.Date, oneBar.Items)
+			}
+		}
 	}
 }

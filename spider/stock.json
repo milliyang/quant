@@ -1,8 +1,10 @@
 {
+    "DownloadFlag": {
+        "Type": "all",
+        "YearFrom": 2013
+    },
     "Instructments": [{
         "Symbol": "sz600031",
-        "Type": "stock",
-        "YearFrom": 2013,
-        "YearTo": 2014
+        "Type": "stock"
     }]
 }

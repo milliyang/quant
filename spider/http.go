@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"code.google.com/p/go.net/html"
+	"errors"
 	"fmt"
 	iconv "github.com/djimenez/iconv-go"
 	"io"
@@ -17,20 +18,28 @@ var (
 	URL_SINA = "http://money.finance.sina.com.cn/corp/go.php/vMS_FuQuanMarketHistory/stockid/%s.html?year=%d&jidu=%d"
 
 	Client *http.Client
+
+	err_failed = errors.New("failed")
+
+	httpDebug = false
 )
 
 func init() {
 	Client = &http.Client{}
 }
 
-func HttpGet(ins Instructment) (string, error) {
+func HttpGet(ins Instructment, year, season int) ([]Bar, error) {
 
-	url := fmt.Sprintf(URL_SINA, ins.getSymbolNumber(), 2014, 1)
+	bars := []Bar{}
 
-	fmt.Println("url>>", url)
+	url := fmt.Sprintf(URL_SINA, ins.getSymbolNumber(), year, season)
+
+	if true || httpDebug {
+		fmt.Println("url>>", url)
+	}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return "nil", err
+		return bars, err
 	} else {
 
 		// req.Header.Add("Host", `money.finance.sina.com.cn`)
@@ -44,62 +53,35 @@ func HttpGet(ins Instructment) (string, error) {
 
 		response, err := Client.Do(req)
 		if err != nil {
-			return "nil", err
+			return bars, err
 		} else {
 			data, err := ioutil.ReadAll(response.Body)
 			// fmt.Println("jsondata>>", string(data))
 			defer response.Body.Close()
 			if err != nil {
-				return "nil", err
+				return bars, err
 			} else {
-
 				out := make([]byte, len(data))
 				out = out[:]
 				iconv.Convert(data, out, "gb2312", "utf-8")
+				bars = parseHtml2(strings.NewReader(string(out)))
+				if bars != nil {
+					return bars, nil
+				} else {
+					return bars, err_failed
+				}
 
-				// fmt.Println("parse html of", ins.getSymbolNumber())
-				parseHtml2(strings.NewReader(string(out)))
-				return "", nil
-
-				htmlStr := string(out)
-				idx0 := strings.Index(htmlStr, "<table id=\"FundHoldSharesTable\">")
-				idx1 := strings.Index(htmlStr, "</thead>") + len("</thead>")
-				idx2 := strings.LastIndex(htmlStr, "</table>")
-
-				fmt.Println(htmlStr[idx0 : len(htmlStr)-1])
-
-				fmt.Println("idx:", idx0, idx1, idx2)
-
-				newStr := htmlStr[idx0:idx1] + "<tbody>" + htmlStr[idx1:idx2] + "<tbody></table>"
-
-				fmt.Println(newStr)
-
-				// parseHtml3(strings.NewReader())
-
-				// parseHtml(strings.NewReader(string(data)))
+				// htmlStr := string(out)
+				// idx0 := strings.Index(htmlStr, "<table id=\"FundHoldSharesTable\">")
+				// idx1 := strings.Index(htmlStr, "</thead>") + len("</thead>")
+				// idx2 := strings.LastIndex(htmlStr, "</table>")
+				// fmt.Println(htmlStr[idx0 : len(htmlStr)-1])
+				// fmt.Println("idx:", idx0, idx1, idx2)
+				// newStr := htmlStr[idx0:idx1] + "<tbody>" + htmlStr[idx1:idx2] + "<tbody></table>"
 			}
 		}
 	}
-	return "", nil
-}
-
-func parseHtml3(r io.Reader) {
-	doc, err := html.Parse(r)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var f func(*html.Node, int)
-	f = func(n *html.Node, indent int) {
-		indent++
-		// if n.Type == html.ElementNode {
-		fmt.Println(indent, "-->", n.Data, n.Attr, nodeText(n))
-		// }
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			f(c, indent)
-		}
-	}
-	f(doc, 0)
+	return bars, err_failed
 }
 
 func nodeText(n *html.Node) string {
@@ -111,7 +93,7 @@ func nodeText(n *html.Node) string {
 	return b.String()
 }
 
-func parseHtml2(r io.Reader) {
+func parseHtml2(r io.Reader) []Bar {
 	doc, err := html.Parse(r)
 	if err != nil {
 		log.Fatal(err)
@@ -137,15 +119,17 @@ func parseHtml2(r io.Reader) {
 	}
 	f(doc)
 
-	parseTableNode(tableNode)
+	return parseTableNode(tableNode)
 }
 
-func parseTableNode(n *html.Node) *html.Node {
+func parseTableNode(n *html.Node) []Bar {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		fmt.Println("parseTableNode", c.Data, c.Attr)
+		if httpDebug {
+			fmt.Println("parseTableNode", c.Data, c.Attr)
+		}
 		if c.Type == html.ElementNode {
 			if c.Data == "tbody" {
-				parseTableTboby(c)
+				return parseTableTboby(c)
 			} else if c.Data == "thead" {
 
 			}
@@ -154,7 +138,8 @@ func parseTableNode(n *html.Node) *html.Node {
 	return nil
 }
 
-func parseTableTboby(tbody *html.Node) {
+func parseTableTboby(tbody *html.Node) []Bar {
+	bars := []Bar{}
 	firstRow := true
 	for c := tbody.FirstChild; c != nil; c = c.NextSibling {
 		// parse row
@@ -163,14 +148,20 @@ func parseTableTboby(tbody *html.Node) {
 				for td := c.FirstChild; td != nil; td = td.NextSibling {
 					if td.Type == html.ElementNode {
 						// fmt.Println("td:", nodeText(td))
-						fmt.Print(td.FirstChild.FirstChild.FirstChild.Data, ",")
+						if httpDebug {
+							fmt.Print(td.FirstChild.FirstChild.FirstChild.Data, ",")
+						}
 					}
 				}
-				// fmt.Println(c.FirstChild.FirstChild.Data)
+				if httpDebug {
+					fmt.Print("\n")
+				}
 				firstRow = false
 			} else {
-				items := []string{}
 				isDate := true
+
+				oneBar := Bar{}
+
 				for td := c.FirstChild; td != nil; td = td.NextSibling {
 					if td.Type == html.ElementNode {
 						// fmt.Println("td:", nodeText(td))
@@ -178,49 +169,19 @@ func parseTableTboby(tbody *html.Node) {
 							for tdx := td.FirstChild.FirstChild; tdx != nil; tdx = tdx.NextSibling {
 								if tdx.Type == html.ElementNode {
 									item := tdx.FirstChild.Data
-									items = append(items, strings.TrimSpace(item))
+									oneBar.Date = strings.TrimSpace(item)
 								}
 							}
 							isDate = false
 						} else {
 							item := td.FirstChild.FirstChild.Data
-							items = append(items, strings.TrimSpace(item))
+							oneBar.Items = append(oneBar.Items, strings.TrimSpace(item))
 						}
 					}
 				}
-				fmt.Print(strings.Join(items, ","))
+				bars = append(bars, oneBar)
 			}
-			fmt.Print("\n")
 		}
 	}
-}
-
-func parseHtml(r io.Reader) {
-	d := html.NewTokenizer(r)
-	for {
-		// token type
-		tokenType := d.Next()
-		if tokenType == html.ErrorToken {
-			return
-		}
-
-		switch tokenType {
-		case html.StartTagToken: // <tag>
-			// type Token struct {
-			//     Type     TokenType
-			//     DataAtom atom.Atom
-			//     Data     string
-			//     Attr     []Attribute
-			// }
-			//
-			// type Attribute struct {
-			//     Namespace, Key, Val string
-			// }
-
-		case html.TextToken: // text between start and end tag
-		case html.EndTagToken: // </tag>
-		case html.SelfClosingTagToken: // <tag/>
-
-		}
-	}
+	return bars
 }

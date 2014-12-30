@@ -7,15 +7,23 @@ import (
 	"os"
 )
 
-type Instructment struct {
-	Symbol   string // SZ600001
-	Type     string // stock
-	YearFrom int    // 2013
-	YearTo   int    // 2014
-}
+var (
+	Config = StockConfig{}
+)
 
 type StockConfig struct {
+	DownloadFlag  DownFlag
 	Instructments []Instructment
+}
+
+type DownFlag struct {
+	Type     string // {all, recent}
+	YearFrom int    // 2014
+}
+
+type Instructment struct {
+	Symbol string // SZ600001
+	Type   string // stock
 }
 
 func (this *Instructment) getSymbolNumber() string {
@@ -26,7 +34,7 @@ func (this *Instructment) getSymbolNumber() string {
 	}
 }
 
-func GetInstructmentFromConfigFile(path string) (ins []Instructment) {
+func parseConfigFile(path string) error {
 	f, ferr := os.Open(path)
 	if ferr != nil {
 		fmt.Errorf("open failed: %s", ferr.Error())
@@ -36,15 +44,11 @@ func GetInstructmentFromConfigFile(path string) (ins []Instructment) {
 	if err != nil {
 		fmt.Errorf("read failed: %s", err.Error())
 	} else {
-		stockConfig := StockConfig{}
-		err := json.Unmarshal(bytes, &stockConfig)
+		err := json.Unmarshal(bytes, &Config)
 		if err != nil {
 			fmt.Errorf("parse failed: %s", err.Error())
 		}
-		for _, ins := range stockConfig.Instructments {
-			JsonPrint(ins)
-		}
-		return stockConfig.Instructments
+		JsonPrint(Config)
 	}
 	return nil
 }
