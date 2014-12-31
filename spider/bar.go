@@ -70,7 +70,7 @@ func (this *Bar) selfCheck() bool {
 // open, high, close, low, volumn, amouunt, factor ->
 // open, high, low, close, volumn, amount, factor
 func (this *Bar) fxxkingSina() {
-	if len(this.Items) == 7 {
+	if len(this.Items) == 7 || len(this.Items) == 6 {
 		swap := this.Items[3]
 		this.Items[3] = this.Items[2]
 		this.Items[2] = swap

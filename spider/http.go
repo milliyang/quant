@@ -18,6 +18,11 @@ var (
 	// money.finance.sina.com.cn/corp/go.php/vMS_FuQuanMarketHistory/stockid/600031.html?year=2014&jidu=1
 	URL_SINA = "http://money.finance.sina.com.cn/corp/go.php/vMS_FuQuanMarketHistory/stockid/%s.html?year=%d&jidu=%d"
 
+	URL_SINA_ETF = "http://vip.stock.finance.sina.com.cn/corp/go.php/vMS_MarketHistory/stockid/%s/type/S.phtml?year=%d&jidu=%d"
+
+	// shang zheng zhi shu:
+	// http://vip.stock.finance.sina.com.cn/corp/go.php/vMS_MarketHistory/stockid/000001/type/S.phtml?year=2014&jidu=1
+
 	Client *http.Client
 
 	err_failed = errors.New("failed")
@@ -33,7 +38,12 @@ func HttpGet(ins Instructment, year, season int) ([]Bar, error) {
 
 	bars := []Bar{}
 
-	url := fmt.Sprintf(URL_SINA, ins.getSymbolNumber(), year, season)
+	var url string
+	if ins.Type == "ETF" {
+		url = fmt.Sprintf(URL_SINA_ETF, ins.getSymbolNumber(), year, season)
+	} else {
+		url = fmt.Sprintf(URL_SINA, ins.getSymbolNumber(), year, season)
+	}
 
 	if true || httpDebug {
 		fmt.Println("url>>", url)
@@ -123,6 +133,10 @@ func parseHtml2(r io.Reader) []Bar {
 		}
 	}
 	f(doc)
+
+	if tableNode == nil {
+		return []Bar{}
+	}
 
 	return parseTableNode(tableNode)
 }

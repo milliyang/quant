@@ -54,5 +54,11 @@
     }, {
         "Symbol": "002146",
         "Type": "stock"
+    }, {
+        "Symbol": "000001",
+        "Type": "ETF"
+    }, {
+        "Symbol": "399001",
+        "Type": "ETF"
     }]
 }

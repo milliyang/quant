@@ -123,7 +123,11 @@ func saveBars(ins Instructment, bars []Bar) {
 	}
 	defer f.Close()
 
-	f.WriteString("#date,open,high,low,close,volumn(share),amount(CNY),factor\n")
+	if ins.Type == "ETF" {
+		f.WriteString("#date,open,high,low,close,volumn(share),amount(CNY)\n")
+	} else {
+		f.WriteString("#date,open,high,low,close,volumn(share),amount(CNY),factor\n")
+	}
 	for _, bar := range bars {
 		f.WriteString(bar.toString())
 	}
@@ -144,13 +148,15 @@ func exportBars(ins Instructment, bars []Bar) {
 
 	// newest factor
 	var factor float64 = 1.0
-	if len(bars) > 0 {
-		lastBar := bars[len(bars)-1]
-		if lastBar.hasFactor() {
-			factor = lastBar.getFactor()
-		} else {
-			fmt.Println("invalid bar. no factor")
-			os.Exit(2)
+	if ins.Type == "stock" {
+		if len(bars) > 0 {
+			lastBar := bars[len(bars)-1]
+			if lastBar.hasFactor() {
+				factor = lastBar.getFactor()
+			} else {
+				fmt.Println("invalid bar. no factor")
+				os.Exit(2)
+			}
 		}
 	}
 

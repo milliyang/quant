@@ -11,7 +11,7 @@ var (
 	stock *string = flag.String("stock", "", "stock number. eg. 600031")
 
 	SPIDER_DEBUG      = false
-	SPIDER_MULTI_TASK = 5
+	SPIDER_MULTI_TASK = 1
 	multiTaskC        = make(chan int, SPIDER_MULTI_TASK)
 )
 
@@ -37,6 +37,7 @@ func main() {
 
 	for _, ins := range Config.Instructments {
 		go downloadInstrucment(ins, finishChan)
+
 	}
 
 	finishCounter := len(Config.Instructments)

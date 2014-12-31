@@ -39,13 +39,23 @@ func (this *Instructment) getSymbolNumber() string {
 }
 
 func (this *Instructment) getFileName() string {
-	outfile := OUTPUT + this.Symbol + ".txt"
+	var outfile string
+	if this.Type == "stock" {
+		outfile = OUTPUT + this.Symbol + ".txt"
+	} else {
+		outfile = OUTPUT + this.Type + this.Symbol + ".txt"
+	}
 	return outfile
 }
 
 func (this *Instructment) getExportFileName() string {
-	export := EXPORT + this.Symbol + ".txt"
-	return export
+	var outfile string
+	if this.Type == "stock" {
+		outfile = EXPORT + this.Symbol + ".txt"
+	} else {
+		outfile = EXPORT + this.Type + this.Symbol + ".txt"
+	}
+	return outfile
 }
 
 func parseConfigFile(path string) error {
