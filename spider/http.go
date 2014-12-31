@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -170,20 +171,57 @@ func parseTableTboby(tbody *html.Node) []Bar {
 					if td.Type == html.ElementNode {
 						// fmt.Println("td:", nodeText(td))
 						if isDate {
+							isDate = false
+							found := false
+
+							// http://money.finance.sina.com.cn/corp/go.php/vMS_FuQuanMarketHistory/stockid/200016.html?year=2006&jidu=3
+							// <td class="head">
+							// <div align="center">
+							// <a target="_blank" href="http://vip.stock.finance.sina.com.cn/quotes_service/view/vMS_tradehistory.php?symbol=sz200016&amp;date=2006-09-29">
+							// 2006-09-29						</a>
+							// </div>
+							// </td>
 							for tdx := td.FirstChild.FirstChild; tdx != nil; tdx = tdx.NextSibling {
 								if tdx.Type == html.ElementNode {
 									item := tdx.FirstChild.Data
 									oneBar.Date = strings.TrimSpace(item)
+									found = true
+									break
 								}
 							}
-							isDate = false
+							if !found {
+								// http://money.finance.sina.com.cn/corp/go.php/vMS_FuQuanMarketHistory/stockid/200016.html?year=2005&jidu=3
+								// <td class="head">
+								// <div align="center">
+								// 2005-09-30 </div>
+								// </td>
+								for tdx := td.FirstChild; tdx != nil; tdx = tdx.NextSibling {
+									if tdx.Type == html.ElementNode {
+										item := tdx.FirstChild.Data
+										oneBar.Date = strings.TrimSpace(item)
+										found = true
+										break
+									}
+								}
+							}
 						} else {
 							item := td.FirstChild.FirstChild.Data
 							oneBar.Items = append(oneBar.Items, strings.TrimSpace(item))
 						}
 					}
 				}
-				bars = append(bars, oneBar)
+				if oneBar.selfCheck() {
+					// Fxxking SINA
+					// open, high, close, low, volumn, amouunt, factor ->
+					// open, high, close, low, volumn, amount, factor
+					oneBar.fxxkingSina()
+					bars = append(bars, oneBar)
+				} else {
+					fmt.Println("http invalid bar")
+					JsonPrint(oneBar)
+					// debug
+					os.Exit(2)
+				}
 			}
 		}
 	}

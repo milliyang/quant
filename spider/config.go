@@ -43,6 +43,11 @@ func (this *Instructment) getFileName() string {
 	return outfile
 }
 
+func (this *Instructment) getExportFileName() string {
+	export := EXPORT + this.Symbol + ".txt"
+	return export
+}
+
 func parseConfigFile(path string) error {
 	f, ferr := os.Open(path)
 	if ferr != nil {

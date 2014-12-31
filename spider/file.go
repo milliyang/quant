@@ -10,6 +10,7 @@ import (
 
 var (
 	OUTPUT = "./download/"
+	EXPORT = "./export/"
 
 	FILE_DEBUG = false
 )
@@ -67,6 +68,7 @@ func SaveInstrumentBars(ins Instructment, bars []Bar) {
 	}
 	// save
 	saveBars(ins, newBars)
+	exportBars(ins, newBars)
 }
 
 func readBars(ins Instructment) []Bar {
@@ -92,7 +94,9 @@ func readBars(ins Instructment) []Bar {
 			}
 			items := strings.Split(oneLine, ",")
 			oneBar := Bar{}
-			if len(items) >= 6 {
+
+			// 2007-08-08,48.80,58.95,50.80,48.80,35241892.00,1861702656.00,4.00
+			if len(items) == 8 {
 				for idx, item := range items {
 					if idx == 0 {
 						oneBar.Date = item
@@ -121,14 +125,38 @@ func saveBars(ins Instructment, bars []Bar) {
 
 	f.WriteString("#date,open,high,low,close,volumn(share),amount(CNY),factor\n")
 	for _, bar := range bars {
-		var line string
-		if bar.hasFactor() {
-			// to NumBar
-			numBar := bar.toNumBar()
-			line = numBar.toString()
+		f.WriteString(bar.toString())
+	}
+}
+
+// no factor
+// Open Quant Format
+func exportBars(ins Instructment, bars []Bar) {
+	outfile := ins.getExportFileName()
+	os.Remove(outfile)
+
+	f, err := os.OpenFile(outfile, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	// newest factor
+	var factor float64 = 1.0
+	if len(bars) > 0 {
+		lastBar := bars[len(bars)-1]
+		if lastBar.hasFactor() {
+			factor = lastBar.getFactor()
 		} else {
-			line = bar.toString()
+			fmt.Println("invalid bar. no factor")
+			os.Exit(2)
 		}
-		f.WriteString(line)
+	}
+
+	f.WriteString("#date,open,high,low,close,volumn(share/10K),amount(CNY/10K)\n")
+	for _, bar := range bars {
+		numBar := bar.toNumBar(factor)
+		f.WriteString(numBar.toString())
 	}
 }

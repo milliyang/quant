@@ -11,13 +11,14 @@ var (
 	stock *string = flag.String("stock", "", "stock number. eg. 600031")
 
 	SPIDER_DEBUG      = false
-	SPIDER_MULTI_TASK = 10
+	SPIDER_MULTI_TASK = 5
+	multiTaskC        = make(chan int, SPIDER_MULTI_TASK)
 )
 
 func main() {
 	flag.Parse()
 
-	finishChan := make(chan bool)
+	finishChan := make(chan bool, 2)
 
 	if *file == "" && *stock == "" {
 		flag.PrintDefaults()
@@ -34,11 +35,8 @@ func main() {
 		AddStock(*stock)
 	}
 
-	_multiTaskC := make(chan int, SPIDER_MULTI_TASK)
 	for _, ins := range Config.Instructments {
-		_multiTaskC <- 1
 		go downloadInstrucment(ins, finishChan)
-		<-_multiTaskC
 	}
 
 	finishCounter := len(Config.Instructments)
@@ -51,10 +49,12 @@ func main() {
 			break
 		}
 	}
+
 	fmt.Println("all done")
 }
 
 func downloadInstrucment(ins Instructment, outC chan bool) {
+	multiTaskC <- 1
 
 	// only the newest seaon ( Now )
 	if Config.DownloadFlag.Type == "recent" {
@@ -88,5 +88,7 @@ func downloadInstrucment(ins Instructment, outC chan bool) {
 		}
 		SaveInstrumentBars(ins, bars)
 	}
+	<-multiTaskC
+
 	outC <- true
 }
