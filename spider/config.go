@@ -7,6 +7,10 @@ import (
 	"os"
 )
 
+const (
+	CONFIG_YEAR = 2005
+)
+
 var (
 	Config = StockConfig{}
 )
@@ -34,6 +38,11 @@ func (this *Instructment) getSymbolNumber() string {
 	}
 }
 
+func (this *Instructment) getFileName() string {
+	outfile := OUTPUT + this.Symbol + ".txt"
+	return outfile
+}
+
 func parseConfigFile(path string) error {
 	f, ferr := os.Open(path)
 	if ferr != nil {
@@ -51,6 +60,16 @@ func parseConfigFile(path string) error {
 		JsonPrint(Config)
 	}
 	return nil
+}
+
+func AddStock(stock string) {
+	Config.DownloadFlag.Type = "all"
+	Config.DownloadFlag.YearFrom = CONFIG_YEAR
+
+	ins := Instructment{}
+	ins.Symbol = stock
+	ins.Type = "stock"
+	Config.Instructments = append(Config.Instructments, ins)
 }
 
 func JsonPrint(obj interface{}) {

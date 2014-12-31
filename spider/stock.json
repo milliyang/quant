@@ -1,10 +1,58 @@
 {
     "DownloadFlag": {
         "Type": "all",
-        "YearFrom": 2013
+        "YearFrom": 2005
     },
     "Instructments": [{
-        "Symbol": "sz600031",
+        "Symbol": "200016",
+        "Type": "stock"
+    }, {
+        "Symbol": "600186",
+        "Type": "stock"
+    }, {
+        "Symbol": "601688",
+        "Type": "stock"
+    }, {
+        "Symbol": "002500",
+        "Type": "stock"
+    }, {
+        "Symbol": "600316",
+        "Type": "stock"
+    }, {
+        "Symbol": "601918",
+        "Type": "stock"
+    }, {
+        "Symbol": "600611",
+        "Type": "stock"
+    }, {
+        "Symbol": "600348",
+        "Type": "stock"
+    }, {
+        "Symbol": "002534",
+        "Type": "stock"
+    }, {
+        "Symbol": "200024",
+        "Type": "stock"
+    }, {
+        "Symbol": "002673",
+        "Type": "stock"
+    }, {
+        "Symbol": "600837",
+        "Type": "stock"
+    }, {
+        "Symbol": "600008",
+        "Type": "stock"
+    }, {
+        "Symbol": "002732",
+        "Type": "stock"
+    }, {
+        "Symbol": "600170",
+        "Type": "stock"
+    }, {
+        "Symbol": "600031",
+        "Type": "stock"
+    }, {
+        "Symbol": "002146",
         "Type": "stock"
     }]
 }

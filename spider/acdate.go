@@ -20,7 +20,7 @@ func getRecentSeason() Season {
 	} else if month <= 9 {
 		season.Quarter = 3
 	} else {
-		season.Quarter = 1
+		season.Quarter = 4
 	}
 	return season
 }

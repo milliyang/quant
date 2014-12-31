@@ -56,7 +56,6 @@ func HttpGet(ins Instructment, year, season int) ([]Bar, error) {
 			return bars, err
 		} else {
 			data, err := ioutil.ReadAll(response.Body)
-			// fmt.Println("jsondata>>", string(data))
 			defer response.Body.Close()
 			if err != nil {
 				return bars, err
@@ -64,6 +63,11 @@ func HttpGet(ins Instructment, year, season int) ([]Bar, error) {
 				out := make([]byte, len(data))
 				out = out[:]
 				iconv.Convert(data, out, "gb2312", "utf-8")
+
+				if httpDebug {
+					fmt.Println("httpGet>>", string(out))
+				}
+
 				bars = parseHtml2(strings.NewReader(string(out)))
 				if bars != nil {
 					return bars, nil
