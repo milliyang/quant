@@ -11,7 +11,7 @@ var (
 	stock *string = flag.String("stock", "", "stock number. eg. 600031")
 
 	SPIDER_DEBUG      = false
-	SPIDER_MULTI_TASK = 1
+	SPIDER_MULTI_TASK = 4
 	multiTaskC        = make(chan int, SPIDER_MULTI_TASK)
 )
 
