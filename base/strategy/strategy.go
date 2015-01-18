@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	debug = false
+	debug = true
 )
 
 func init() {
@@ -18,11 +18,16 @@ func init() {
 
 type Strategy struct {
 	Name       string
+	Symbol     string
 	Instrument map[string]*base.Instrument
 }
 
-func (this *Strategy) Init() {
+func (this *Strategy) Init(symbol string) {
+	if debug {
+		fmt.Println("Strategy.Init()")
+	}
 	this.Name = "Strategy"
+	this.Symbol = symbol
 	this.Instrument = map[string]*base.Instrument{}
 }
 
@@ -47,7 +52,7 @@ func (this *Strategy) OnBarSlice(size int) {
 }
 
 type IStrategy interface {
-	Init()
+	Init(string)
 
 	OnStrategyStart()
 	OnStrategyStop()
