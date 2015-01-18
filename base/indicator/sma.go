@@ -34,6 +34,7 @@ func (this *SMA) IsFake(datetime *time.Time) bool {
 	return false
 }
 
+// @override ISeries.Append
 func (this *SMA) Append(datetime *time.Time, value float64) {
 	if debug {
 		fmt.Println("SMA.Append")

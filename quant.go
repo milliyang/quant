@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"quant/base/bar"
 	"quant/base/strategy"
+	"quant/provider"
 	"reflect"
 )
 
@@ -15,7 +16,8 @@ const (
 var (
 	DefaultQuant = Quant{instruments: map[string]int{}}
 
-	ErrNoProject = errors.New("no project")
+	ErrNoProject  = errors.New("no project")
+	ErrNoProvider = errors.New("no provider")
 )
 
 func init() {
@@ -26,8 +28,9 @@ func init() {
 
 type Quant struct {
 	Name        string
-	Projects    []*BaseProject
+	Projects    []*Project
 	instruments map[string]int
+	Provider    provider.IProvider
 }
 
 func (this *Quant) addInstrument(symbol string) {
@@ -39,11 +42,15 @@ func (this *Quant) addInstrument(symbol string) {
 	}
 }
 
-func registerProject(pro *BaseProject) {
+func registerProject(pro *Project) {
 	if debug {
 		fmt.Println("quant.Project Add:", pro.Name)
 	}
 	DefaultQuant.Projects = append(DefaultQuant.Projects, pro)
+}
+
+func RegisterProvider(provider_ provider.IProvider) {
+	DefaultQuant.Provider = provider_
 }
 
 func Run() {
@@ -85,13 +92,30 @@ func Run() {
 	}
 
 	// connect to bar provider
+	if DefaultQuant.Provider == nil {
+		panic(ErrNoProvider)
+	}
+
+	connectErr := DefaultQuant.Provider.Connect()
+	if connectErr != nil {
+		panic(connectErr)
+	}
+
+	symbols := []string{}
+	for key, _ := range DefaultQuant.instruments {
+		symbols = append(symbols, key)
+	}
+	requestErr := DefaultQuant.Provider.RequestInstrument(symbols)
+	if requestErr != nil {
+		panic(requestErr)
+	}
 
 	// request our stock bar data
 	if debug {
 		fmt.Println("request stock:", DefaultQuant.instruments)
 	}
 
-	// get bar data from other modules
+	datagramChan := make(chan *provider.Datagram, 100)
 
 	// start all strategy
 	for _, oneProject := range DefaultQuant.Projects {
@@ -99,6 +123,22 @@ func Run() {
 			ss.OnStrategyStart()
 		}
 	}
+
+	// get bar data from other modules
+	go DefaultQuant.Provider.Receive(datagramChan)
+
+	// select {
+
+	// 	case datagram := <- datagramChan
+
+	// }
+
+	datagram := &provider.Datagram{}
+	DefaultQuant.HandleOneBar(datagram)
+
+}
+
+func (this *Quant) HandleOneBar(datagram *provider.Datagram) {
 
 	ins := "stock000001"
 	bar := bar.Bar{}
