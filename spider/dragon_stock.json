@@ -1,0 +1,209 @@
+{
+  "DownloadFlag":
+  {
+    "Type": "all",
+    "YearFrom": 2004,
+    "xxx": [ 1, 2, 2, 3, 3 ]
+  },
+  "Instructments": [
+  {
+    "Symbol": "000063",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600183",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000021",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600718",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600177",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000726",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000898",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600019",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600005",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600104",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600085",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600276",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600521",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600309",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600018",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000088",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600012",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600269",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000900",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000012",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000759",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600694",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600900",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600011",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600875",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000400",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000039",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600125",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000002",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000651",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600388",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000617",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000792",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000488",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600030",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600036",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600761",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000528",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600585",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600123",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "601001",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000063",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000997",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600456",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600205",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600616",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000970",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "600519",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000858",
+    "Type": "stock"
+  },
+  {
+    "Symbol": "000869",
+    "Type": "stock"
+  } ]
+}
