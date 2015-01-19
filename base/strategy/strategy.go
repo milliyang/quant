@@ -18,8 +18,8 @@ func init() {
 
 type Strategy struct {
 	Name       string
-	Symbol     string
 	Instrument map[string]*base.Instrument
+	Symbol     string
 }
 
 func (this *Strategy) Init(symbol string) {
@@ -29,6 +29,14 @@ func (this *Strategy) Init(symbol string) {
 	this.Name = "Strategy"
 	this.Symbol = symbol
 	this.Instrument = map[string]*base.Instrument{}
+}
+
+func (this *Strategy) Match(symbol string) bool {
+	if this.Symbol == symbol {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (this *Strategy) OnStrategyStart() {
@@ -53,6 +61,7 @@ func (this *Strategy) OnBarSlice(size int) {
 
 type IStrategy interface {
 	Init(string)
+	Match(string) bool
 
 	OnStrategyStart()
 	OnStrategyStop()

@@ -19,9 +19,21 @@ func init() {
 	}
 }
 
+const (
+	EventBarOpen int = 1 + iota
+	EventBar
+	EventBarSlice
+)
+
+// Note:
+//   1. Datagram is Sorted in Time < Event < Symbol < Open < Close
+//   2. so that everyday, we always get Datagrams in order:
+//      >> EventBarOpen, EventBar, EventBar, EventBar ... EventBarSlice
+//
 type Datagram struct {
-	Symbol string
 	Time   string
+	Event  int
+	Symbol string
 	Open   string
 	High   string
 	Low    string

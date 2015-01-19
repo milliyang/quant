@@ -75,7 +75,21 @@ func (this *FileProvider) RequestInstrument(symbols []string) error {
 }
 
 // This Function Will Block, use go provider.Receive()
-func (this *FileProvider) Receive(chan *Datagram) error {
+func (this *FileProvider) Receive(outChan chan *Datagram) error {
+
+	counter := 1
+	for _, datagramPtr := range this.cacheDatagram {
+		outChan <- datagramPtr
+
+		counter++
+		if counter > 5 {
+			fmt.Println("\n[Waring]", "FileProvider only generate 4 record for Debug!!!\n\n")
+			break
+		}
+	}
+
+	// close the channel at last, so that range Chan can finish!!
+	close(outChan)
 	return nil
 }
 

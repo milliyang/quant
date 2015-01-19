@@ -12,15 +12,15 @@ func init() {
 }
 
 type Project struct {
-	Name                  string
-	Instrucment           []string
-	basicStrategies       []interface{}
-	mapInstrumentStrategy map[string]strategy.IStrategy
+	Name            string
+	Instrucment     []string
+	basicStrategies []interface{}
+	allStrategy     []strategy.IStrategy
 }
 
 func NewProject() *Project {
 	project := Project{}
-	project.mapInstrumentStrategy = map[string]strategy.IStrategy{}
+	project.allStrategy = []strategy.IStrategy{}
 
 	registerProject(&project)
 	return &project

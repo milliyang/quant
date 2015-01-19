@@ -18,11 +18,18 @@ type SMA struct {
 	// workingList  *list.List
 }
 
-func NewSMA(length int) *SMA {
+func NewSMA(parent series.ISeries, length int) *SMA {
 	s := &SMA{}
-	s.FloatSeries.Init()
+
+	s.Init(parent)
 	s.workingValue = []float64{}
 	s.Length = length
+
+	// GoBug?
+	//
+	// if parent != nil {
+	// 	parent.AddChild(s)
+	// }
 	return s
 }
 
@@ -37,7 +44,7 @@ func (this *SMA) IsFake(datetime *time.Time) bool {
 // @override ISeries.Append
 func (this *SMA) Append(datetime *time.Time, value float64) {
 	if debug {
-		fmt.Println("SMA.Append")
+		fmt.Println("SMA.Append:", value)
 	}
 
 	if len(this.workingValue) < this.Length {

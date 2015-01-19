@@ -7,6 +7,7 @@ import (
 	"quant/base/strategy"
 	"quant/provider"
 	"reflect"
+	"time"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 )
 
 var (
-	DefaultQuant = Quant{instruments: map[string]int{}}
+	DefaultQuant = Quant{instruments: map[string]int{}, AccountDate: time.Time{}}
 
 	ErrNoProject  = errors.New("no project")
 	ErrNoProvider = errors.New("no provider")
@@ -31,6 +32,8 @@ type Quant struct {
 	Projects    []*Project
 	instruments map[string]int
 	Provider    provider.IProvider
+	AccountDate time.Time
+	lastBar     *bar.Bar
 }
 
 func (this *Quant) addInstrument(symbol string) {
@@ -82,12 +85,9 @@ func Run() {
 					}
 				*/
 				c := v.Interface().(strategy.IStrategy)
-				oneProject.mapInstrumentStrategy[ins] = c
+				c.Init(ins)
+				oneProject.allStrategy = append(oneProject.allStrategy, c)
 			}
-		}
-
-		for ins, ss := range oneProject.mapInstrumentStrategy {
-			ss.Init(ins)
 		}
 	}
 
@@ -119,36 +119,53 @@ func Run() {
 
 	// start all strategy
 	for _, oneProject := range DefaultQuant.Projects {
-		for _, ss := range oneProject.mapInstrumentStrategy {
+		for _, ss := range oneProject.allStrategy {
 			ss.OnStrategyStart()
 		}
 	}
 
-	// get bar data from other modules
+	// receive datagram from other modules
 	go DefaultQuant.Provider.Receive(datagramChan)
 
-	// select {
+	for datagramPtr := range datagramChan {
+		DefaultQuant.handleOneBar(datagramPtr)
+	}
 
-	// 	case datagram := <- datagramChan
-
-	// }
-
-	datagram := &provider.Datagram{}
-	DefaultQuant.HandleOneBar(datagram)
-
+	// start all strategy
+	for _, oneProject := range DefaultQuant.Projects {
+		for _, ss := range oneProject.allStrategy {
+			ss.OnStrategyStop()
+		}
+	}
 }
 
-func (this *Quant) HandleOneBar(datagram *provider.Datagram) {
+func (this *Quant) handleOneBar(dgram *provider.Datagram) {
+	if dgram.Event == provider.EventBarOpen {
+		// ToDo:
+		// not ready yet, haven't figure out how to implement it
+		for _, oneProject := range DefaultQuant.Projects {
+			for _, oneStrategy := range oneProject.allStrategy {
+				return
 
-	ins := "stock000001"
-	bar := bar.Bar{}
-
-	// for each instrument , for each bar
-	for _, oneProject := range DefaultQuant.Projects {
-		oneStrategy, ok := oneProject.mapInstrumentStrategy[ins]
-		if ok {
-			oneStrategy.OnBar(bar)
-			fmt.Println(oneStrategy, bar)
+				// ToDo:
+				oneStrategy.OnBarOpen(bar.Bar{})
+			}
+		}
+	} else if dgram.Event == provider.EventBarSlice {
+		for _, oneProject := range DefaultQuant.Projects {
+			for _, oneStrategy := range oneProject.allStrategy {
+				oneStrategy.OnBarSlice(1)
+			}
+		}
+	} else {
+		newBar := bar.NewBar(dgram.Time, dgram.Open, dgram.High, dgram.Low, dgram.Close, dgram.Volumn, dgram.Amount)
+		// for each instrument , for each bar
+		for _, oneProject := range DefaultQuant.Projects {
+			for _, oneStrategy := range oneProject.allStrategy {
+				if oneStrategy.Match(dgram.Symbol) {
+					oneStrategy.OnBar(*newBar)
+				}
+			}
 		}
 	}
 }
