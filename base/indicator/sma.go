@@ -25,11 +25,11 @@ func NewSMA(parent series.ISeries, length int) *SMA {
 	s.workingValue = []float64{}
 	s.Length = length
 
-	// GoBug?
+	// [GoBug Tag00001]??
 	//
-	// if parent != nil {
-	// 	parent.AddChild(s)
-	// }
+	if parent != nil {
+		parent.AddChild(s)
+	}
 	return s
 }
 

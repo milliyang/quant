@@ -88,9 +88,9 @@ func (this *FloatSeries) Init(parent ISeries) {
 	//
 	// It seems we can't do it in anonymous struct. leave it to indicator.SMA
 	//
-	if parent != nil {
-		parent.AddChild(this)
-	}
+	// if parent != nil {
+	// 	parent.AddChild(this)
+	// }
 }
 
 func (this *FloatSeries) Match(symbol string) bool {
