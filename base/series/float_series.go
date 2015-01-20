@@ -101,6 +101,10 @@ func (this *FloatSeries) Match(symbol string) bool {
 	}
 }
 
+func (this *FloatSeries) Now() time.Time {
+	return this.EndTime
+}
+
 func (this *FloatSeries) AddChild(child ISeries) {
 	this.InnerChilds = append(this.InnerChilds, child)
 }

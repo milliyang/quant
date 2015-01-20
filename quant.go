@@ -85,7 +85,10 @@ func Run() {
 					}
 				*/
 				c := v.Interface().(strategy.IStrategy)
-				c.Init(ins)
+
+				barseries := bar.InitBarManagerWithSymbol(ins)
+
+				c.Init(ins, barseries)
 				oneProject.allStrategy = append(oneProject.allStrategy, c)
 			}
 		}
@@ -158,7 +161,9 @@ func (this *Quant) handleOneBar(dgram *provider.Datagram) {
 			}
 		}
 	} else {
+
 		newBar := bar.NewBar(dgram.Time, dgram.Open, dgram.High, dgram.Low, dgram.Close, dgram.Volumn, dgram.Amount)
+		bar.StoreBarToManager(dgram.Symbol, *newBar)
 		// for each instrument , for each bar
 		for _, oneProject := range DefaultQuant.Projects {
 			for _, oneStrategy := range oneProject.allStrategy {

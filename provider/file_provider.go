@@ -82,7 +82,7 @@ func (this *FileProvider) Receive(outChan chan *Datagram) error {
 		outChan <- datagramPtr
 
 		counter++
-		if counter > 5 {
+		if counter > 20 {
 			fmt.Println("\n[Waring]", "FileProvider only generate 4 record for Debug!!!\n\n")
 			break
 		}

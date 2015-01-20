@@ -2,7 +2,6 @@ package strategy
 
 import (
 	"fmt"
-	"quant/base"
 	"quant/base/bar"
 )
 
@@ -17,18 +16,18 @@ func init() {
 }
 
 type Strategy struct {
-	Name       string
-	Instrument map[string]*base.Instrument
-	Symbol     string
+	Name      string
+	Symbol    string
+	BarSeries *bar.BarSeries
 }
 
-func (this *Strategy) Init(symbol string) {
+func (this *Strategy) Init(symbol string, barSeries *bar.BarSeries) {
 	if debug {
 		fmt.Println("Strategy.Init()")
 	}
 	this.Name = "Strategy"
 	this.Symbol = symbol
-	this.Instrument = map[string]*base.Instrument{}
+	this.BarSeries = barSeries
 }
 
 func (this *Strategy) Match(symbol string) bool {
@@ -60,7 +59,7 @@ func (this *Strategy) OnBarSlice(size int) {
 }
 
 type IStrategy interface {
-	Init(string)
+	Init(string, *bar.BarSeries)
 	Match(string) bool
 
 	OnStrategyStart()

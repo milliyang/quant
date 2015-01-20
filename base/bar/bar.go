@@ -1,13 +1,18 @@
 package bar
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
 )
 
 const (
-	debug = true
+	debug = false
+)
+
+var (
+	ErrFieldNoReady = errors.New("bar field not ready")
 )
 
 type Bar struct {
@@ -31,11 +36,12 @@ func (this *Bar) get(which BarField) float64 {
 		return this.High
 	case Low:
 		return this.Low
+	default:
+		panic(ErrFieldNoReady)
 	}
-	return -1
 }
 
-const yearForm = "2006-01-22"
+const yearForm = "yyyy-mm-dd"
 
 func NewBar(datetime, open, high, low, close_, volumn, size string) *Bar {
 
@@ -43,7 +49,13 @@ func NewBar(datetime, open, high, low, close_, volumn, size string) *Bar {
 		return nil
 	}
 
-	date_, _ := time.Parse(yearForm, datetime)
+	if len(datetime) != len(yearForm) {
+		panic(datetime)
+	}
+
+	date_, _ := time.Parse(time.RFC3339, datetime+"T09:00:00+00:00")
+
+	// date_, _ := time.Time
 	open_, _ := strconv.ParseFloat(open, 32)
 	high_, _ := strconv.ParseFloat(high, 32)
 	low_, _ := strconv.ParseFloat(low, 32)
@@ -69,7 +81,7 @@ func NewBar(datetime, open, high, low, close_, volumn, size string) *Bar {
 	return newBar
 }
 
-func (this *Bar) toString() string {
-	return fmt.Sprintf("%v %f %f %f %f %f %f", this.DateTime, this.Open, this.High, this.Low, this.Low, this.Volumn, this.Size)
-
+func (this *Bar) ToString() string {
+	return fmt.Sprintf("%d-%02d-%02d %f %f %f %f %f %f", this.DateTime.Year(), this.DateTime.Month(), this.DateTime.Day(),
+		this.Open, this.High, this.Low, this.Low, this.Volumn, this.Size)
 }

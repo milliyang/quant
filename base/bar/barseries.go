@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"quant/base/series"
+	_ "reflect"
 	"time"
 )
 
@@ -54,6 +55,10 @@ func (this *BarSeries) Index(datetime *time.Time) int {
 	return -1
 }
 
+func (this *BarSeries) Now() time.Time {
+	return this.EndTime
+}
+
 func (this *BarSeries) ValueAtTime(datetime *time.Time) float64 {
 
 	idx := this.Index(datetime)
@@ -85,6 +90,7 @@ func (this *BarSeries) Init(parent series.ISeries) {
 	this.bars = []Bar{}
 	this.mapDatetimeBar = map[int]Bar{}
 	this.InnerParent = parent
+	this.barField = Close // default use close
 }
 
 func (this *BarSeries) Match(symbol string) bool {
@@ -106,16 +112,18 @@ func (this *BarSeries) Append(datetime *time.Time, value float64) {
 	panic(ErrInvalidUseOfBarSeries)
 }
 
-func (this *BarSeries) AppendBar(datetime *time.Time, bar_ Bar) {
+func (this *BarSeries) AppendBar(bar_ Bar) {
 	if debug {
-		fmt.Println("BarSeries.Append:", bar_)
+		fmt.Println("BarSeries.Append:", bar_.get(this.barField))
 	}
 
+	datetime := bar_.DateTime
+
 	if len(this.bars) == 0 {
-		this.StartTime = *datetime
-		this.EndTime = *datetime
+		this.StartTime = datetime
+		this.EndTime = datetime
 	} else {
-		this.EndTime = *datetime
+		this.EndTime = datetime
 	}
 
 	sec := int(datetime.Unix())
@@ -127,10 +135,11 @@ func (this *BarSeries) AppendBar(datetime *time.Time, bar_ Bar) {
 	}
 
 	this.mapDatetimeBar[sec] = bar_
-	this.DateTime = append(this.DateTime, *datetime)
+	this.DateTime = append(this.DateTime, datetime)
 	this.bars = append(this.bars, bar_)
 
 	for _, child := range this.InnerChilds {
-		child.Append(datetime, bar_.get(this.barField))
+		// fmt.Println("child iseries append", this.Symbol, bar_.get(this.barField), reflect.TypeOf(child), child.Count())
+		child.Append(&datetime, bar_.get(this.barField))
 	}
 }
