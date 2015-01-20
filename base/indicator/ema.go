@@ -14,6 +14,11 @@ import (
 	1. EMA = Price(t) * k + EMA(y) * (1 – k)
 		t = today, y = yesterday, N = number of days in EMA, k = 2/(N+1)
 
+
+	refer:
+	1. http://zh.wikipedia.org/wiki/%E7%A7%BB%E5%8B%95%E5%B9%B3%E5%9D%87
+    2. http://www.iexplain.org/ema-how-to-calculate/
+
 */
 
 type EMA struct {

@@ -33,28 +33,40 @@ import (
       1.
       2. dollar value, not percentage price oscillator
 
-
     refer:
     1. http://www.investopedia.com/articles/technical/082701.asp
     2. http://zh.wikipedia.org/wiki/MACD
+	3. http://zh.wikipedia.org/wiki/%E7%A7%BB%E5%8B%95%E5%B9%B3%E5%9D%87
 
 */
 type MACD struct {
-	series.FloatSeries
-	Length       int
-	workingValue []float64
-	// workingList  *list.List
+	series.FloatSeries // as OSC
+	ShortEMA           *EMA
+	LongEMA            *EMA
+	DEM                *EMA
+
+	ShortPeriod int
+	LongPeriod  int
+	DEMPeriod   int
+	Length      int
 }
 
-func NewMACD(parent series.ISeries, length int) *MACD {
+func NewMACD(parent series.ISeries, short, long, dem int) *MACD {
 	s := &MACD{}
 
 	s.Init(parent)
-	s.workingValue = []float64{}
-	s.Length = length
+	s.ShortPeriod = short
+	s.LongPeriod = long
+	s.DEMPeriod = dem
 
-	// [GoBug Tag00001]??
-	//
+	s.Length = s.LongPeriod
+
+	// Manully update short/long term EMA
+	// no parent
+	s.ShortEMA = NewEMA(nil, short)
+	s.LongEMA = NewEMA(nil, long)
+	s.DEM = NewEMA(nil, dem)
+
 	if parent != nil {
 		parent.AddChild(s)
 	}
@@ -74,21 +86,31 @@ func (this *MACD) Append(datetime *time.Time, value float64) {
 	if debug {
 		fmt.Print("MACD.Append:", value, " and ")
 	}
+	// Manully update short/long term EMA
+	this.ShortEMA.Append(datetime, value)
+	this.LongEMA.Append(datetime, value)
 
-	if len(this.workingValue) < this.Length {
-		this.workingValue = append(this.workingValue, value)
-	} else {
-		this.workingValue = append(this.workingValue[1:], value)
-	}
+	// DIFF = EMA(close,16) - EMA(close,26)
+	// DEM = EMA(DIFF,9)
+	// OSC = DIFF - DEM
+	DIFF := this.ShortEMA.ValueAtTime(datetime) - this.LongEMA.ValueAtTime(datetime)
+	this.DEM.Append(datetime, DIFF)
+	OSC := DIFF - this.DEM.ValueAtTime(datetime)
+	this.FloatSeries.Append(datetime, OSC)
+}
 
-	// average
-	var total float64
-	for _, item := range this.workingValue {
-		total += item
-	}
+func (this *MACD) LongEmaValues() []float64 {
+	return this.LongEMA.Values()
+}
 
-	var num float64
-	num = float64(len(this.workingValue))
-	this.FloatSeries.Append(datetime, total/num)
-	return
+func (this *MACD) ShortEmaValues() []float64 {
+	return this.ShortEMA.Values()
+}
+
+// func (this *MACD) DemValues() []float64 {
+// 	return this.DEM.Values()
+// }
+
+func (this *MACD) OscValues() []float64 {
+	return this.Values()
 }
