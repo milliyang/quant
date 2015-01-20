@@ -1,9 +1,9 @@
 package bar
 
-type BarData int
+type BarField int
 
 const (
-	Close BarData = 1 + iota
+	Close BarField = 1 + iota
 	Open
 	High
 	Low
@@ -15,7 +15,7 @@ const (
 	OpenInt
 )
 
-var BarDataName = [...]string{
+var BarFieldName = [...]string{
 	"Close",
 	"Open",
 	"High",

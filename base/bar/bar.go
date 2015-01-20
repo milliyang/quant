@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+const (
+	debug = true
+)
+
 type Bar struct {
 	DateTime time.Time
 	Close    float64
@@ -17,7 +21,7 @@ type Bar struct {
 	Type     BarType
 }
 
-func (this *Bar) get(which BarData) float64 {
+func (this *Bar) get(which BarField) float64 {
 	switch which {
 	case Open:
 		return this.Open
