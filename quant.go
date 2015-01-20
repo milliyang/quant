@@ -8,6 +8,8 @@ import (
 	"quant/provider"
 	"reflect"
 	"time"
+
+	_ "quant/base/indicator"
 )
 
 const (

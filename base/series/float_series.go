@@ -43,6 +43,14 @@ func (this *FloatSeries) Count() int {
 	return len(this.Data)
 }
 
+func (this *FloatSeries) Contains(datetime *time.Time) bool {
+	if this.Index(datetime) == -1 {
+		return false
+	} else {
+		return true
+	}
+}
+
 func (this *FloatSeries) Index(datetime *time.Time) int {
 	for idx, item := range this.DateTime {
 		if item.Equal(*datetime) {
@@ -125,6 +133,7 @@ func (this *FloatSeries) Append(datetime *time.Time, value float64) {
 	oldvalue, ok := this.MapDatetimeData[sec]
 	if ok {
 		// can not append duplicate record
+		// second is min unit "now".
 		fmt.Println("can not append duplicate record: %v %v", oldvalue, ok)
 		panic(datetime)
 	}
