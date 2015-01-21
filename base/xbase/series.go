@@ -1,4 +1,4 @@
-package series
+package xbase
 
 import (
 	"time"

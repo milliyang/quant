@@ -4,7 +4,12 @@ import (
 	// "container/list"
 	"fmt"
 	"quant/base/series"
+	"quant/base/xbase"
 	"time"
+)
+
+const (
+	debug = false
 )
 
 // Simple Moving Average
@@ -15,12 +20,13 @@ type SMA struct {
 	// workingList  *list.List
 }
 
-func NewSMA(parent series.ISeries, length int) *SMA {
+func NewSMA(parent xbase.ISeries, length int) *SMA {
 	s := &SMA{}
 
 	s.Init(parent)
 	s.workingValue = []float64{}
 	s.Length = length
+	s.Name = "SMA" + fmt.Sprintf("%2d", length)
 
 	// [GoBug Tag00001]??
 	//

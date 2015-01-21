@@ -4,6 +4,7 @@ import (
 	// "container/list"
 	"fmt"
 	"quant/base/series"
+	"quant/base/xbase"
 	"time"
 )
 
@@ -29,7 +30,7 @@ type EMA struct {
 	// workingList  *list.List
 }
 
-func NewEMA(parent series.ISeries, length int) *EMA {
+func NewEMA(parent xbase.ISeries, length int) *EMA {
 	s := &EMA{}
 
 	s.Init(parent)
@@ -37,6 +38,8 @@ func NewEMA(parent series.ISeries, length int) *EMA {
 	s.workingYesterday = 0
 	var k float64 = (float64)(length + 1)
 	s.Alpha = 2.0 / k
+
+	s.Name = "EMA" + fmt.Sprintf("%2d", length)
 
 	// [GoBug Tag00001]??
 	//

@@ -2,10 +2,24 @@ package series
 
 import (
 	"fmt"
+	"quant/base/xbase"
 	"time"
 )
 
+const (
+	enable_safe_mode = true
+	debug            = false
+)
+
+/*
+	implement interface:
+	1. xbase.ISeries
+	2. IIndicator
+
+
+*/
 type FloatSeries struct {
+	Name            string
 	Symbol          string
 	StartTime       time.Time
 	EndTime         time.Time
@@ -13,8 +27,8 @@ type FloatSeries struct {
 	Data            []float64
 	MapDatetimeData map[int]float64 // map[seconds]value
 
-	InnerParent ISeries
-	InnerChilds []ISeries
+	InnerParent xbase.ISeries
+	InnerChilds []xbase.ISeries
 }
 
 func (this *FloatSeries) Keys() []time.Time {
@@ -86,7 +100,7 @@ func NewFloatSeries() *FloatSeries {
 	return s
 }
 
-func (this *FloatSeries) Init(parent ISeries) {
+func (this *FloatSeries) Init(parent xbase.ISeries) {
 	this.DateTime = []time.Time{}
 	this.Data = []float64{}
 	this.MapDatetimeData = map[int]float64{}
@@ -113,7 +127,7 @@ func (this *FloatSeries) Now() time.Time {
 	return this.EndTime
 }
 
-func (this *FloatSeries) AddChild(child ISeries) {
+func (this *FloatSeries) AddChild(child xbase.ISeries) {
 	this.InnerChilds = append(this.InnerChilds, child)
 }
 
@@ -146,4 +160,38 @@ func (this *FloatSeries) Append(datetime *time.Time, value float64) {
 	for _, child := range this.InnerChilds {
 		child.Append(datetime, value)
 	}
+}
+
+// indicator.IIndicator.OnMeasure
+
+// num of table, X cordirate [datetime count], Y cordirate [min, max, num, percent]
+func (this *FloatSeries) OnMeasure() (int, int, float64, float64, int, float64) {
+
+	// put it here now.
+	var min, max float64
+	var num int
+
+	for idx, value := range this.Data {
+		num = idx
+		if value < min {
+			min = value
+		}
+		if value > max {
+			value = max
+		}
+	}
+	return 1, len(this.DateTime), min, max, num, 100
+}
+
+// indicator.IIndicator.OnDraw(ICanvas)
+func (this *FloatSeries) OnDraw(canvas xbase.ICanvas) {
+	fmt.Println(this.Name, "symbol", this.Symbol, "onDraw")
+
+	canvas.DrawLine(1, this.DateTime, this.Data, 1)
+	// canvas.DrawBar(table,  []time.Time, []bar.Bar, color)
+
+	// canvas.DrawBuy(table,  []time.Time, []float64,color)
+	// canvas.DrawSell(table, []time.Time, []float64,color)
+	// canvas.DrawSpark(table,[]time.Time, []float64,color)
+	// canvas.DrawShit(table, []time.Time, []float64,color)
 }

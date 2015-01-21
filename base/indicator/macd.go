@@ -4,6 +4,8 @@ import (
 	// "container/list"
 	"fmt"
 	"quant/base/series"
+	"quant/base/xbase"
+
 	"time"
 )
 
@@ -52,13 +54,14 @@ type MACD struct {
 	Length      int
 }
 
-func NewMACD(parent series.ISeries, short, long, dem int) *MACD {
+func NewMACD(parent xbase.ISeries, short, long, dem int) *MACD {
 	s := &MACD{}
 
 	s.Init(parent)
 	s.ShortPeriod = short
 	s.LongPeriod = long
 	s.DEMPeriod = dem
+	s.Name = fmt.Sprintf("MACD (%d,%d,%d)", short, long, dem)
 
 	s.Length = s.LongPeriod
 
@@ -120,4 +123,38 @@ func (this *MACD) DiffValues() []float64 {
 
 func (this *MACD) OscValues() []float64 {
 	return this.Values()
+}
+
+// indicator.IIndicator.OnMeasure
+
+// num of table, X cordirate [datetime count], Y cordirate [min, max, num, percent]
+func (this *MACD) OnMeasure() (int, int, float64, float64, int, float64) {
+
+	// put it here now.
+	var min, max float64
+	var num int
+
+	for idx, value := range this.Data {
+		num = idx
+		if value < min {
+			min = value
+		}
+		if value > max {
+			value = max
+		}
+	}
+	return 1, len(this.DateTime), min, max, num, 100
+}
+
+// indicator.IIndicator.OnDraw(ICanvas)
+func (this *MACD) OnDraw(canvas xbase.ICanvas) {
+	fmt.Println(this.Name, "symbol", this.Symbol, "onDraw")
+
+	canvas.DrawLine(1, this.DateTime, this.Data, 1)
+	// canvas.DrawBar(table,  []time.Time, []bar.Bar, color)
+
+	// canvas.DrawBuy(table,  []time.Time, []float64,color)
+	// canvas.DrawSell(table, []time.Time, []float64,color)
+	// canvas.DrawSpark(table,[]time.Time, []float64,color)
+	// canvas.DrawShit(table, []time.Time, []float64,color)
 }

@@ -3,7 +3,7 @@ package bar
 import (
 	"errors"
 	"fmt"
-	"quant/base/series"
+	"quant/base/xbase"
 	_ "reflect"
 	"time"
 )
@@ -21,8 +21,8 @@ type BarSeries struct {
 	barField       BarField
 	mapDatetimeBar map[int]Bar
 
-	InnerChilds []series.ISeries
-	InnerParent series.ISeries // always nil
+	InnerChilds []xbase.ISeries
+	InnerParent xbase.ISeries // always nil
 }
 
 func (this *BarSeries) Keys() []time.Time {
@@ -85,7 +85,7 @@ func NewBarSeries() *BarSeries {
 	return s
 }
 
-func (this *BarSeries) Init(parent series.ISeries) {
+func (this *BarSeries) Init(parent xbase.ISeries) {
 	this.DateTime = []time.Time{}
 	this.bars = []Bar{}
 	this.mapDatetimeBar = map[int]Bar{}
@@ -101,7 +101,7 @@ func (this *BarSeries) Match(symbol string) bool {
 	}
 }
 
-func (this *BarSeries) AddChild(child series.ISeries) {
+func (this *BarSeries) AddChild(child xbase.ISeries) {
 	this.InnerChilds = append(this.InnerChilds, child)
 }
 
