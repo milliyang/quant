@@ -43,6 +43,7 @@ type MACD struct {
 	series.FloatSeries // as OSC
 	ShortEMA           *EMA
 	LongEMA            *EMA
+	DIFF               *series.FloatSeries
 	DEM                *EMA
 
 	ShortPeriod int
@@ -66,6 +67,7 @@ func NewMACD(parent series.ISeries, short, long, dem int) *MACD {
 	s.ShortEMA = NewEMA(nil, short)
 	s.LongEMA = NewEMA(nil, long)
 	s.DEM = NewEMA(nil, dem)
+	s.DIFF = series.NewFloatSeries()
 
 	if parent != nil {
 		parent.AddChild(s)
@@ -93,9 +95,10 @@ func (this *MACD) Append(datetime *time.Time, value float64) {
 	// DIFF = EMA(close,16) - EMA(close,26)
 	// DEM = EMA(DIFF,9)
 	// OSC = DIFF - DEM
-	DIFF := this.ShortEMA.ValueAtTime(datetime) - this.LongEMA.ValueAtTime(datetime)
-	this.DEM.Append(datetime, DIFF)
-	OSC := DIFF - this.DEM.ValueAtTime(datetime)
+	diff := this.ShortEMA.ValueAtTime(datetime) - this.LongEMA.ValueAtTime(datetime)
+	this.DIFF.Append(datetime, diff)
+	this.DEM.Append(datetime, diff)
+	OSC := diff - this.DEM.ValueAtTime(datetime)
 	this.FloatSeries.Append(datetime, OSC)
 }
 
@@ -107,9 +110,13 @@ func (this *MACD) ShortEmaValues() []float64 {
 	return this.ShortEMA.Values()
 }
 
-// func (this *MACD) DemValues() []float64 {
-// 	return this.DEM.Values()
-// }
+func (this *MACD) DemValues() []float64 {
+	return this.DEM.Values()
+}
+
+func (this *MACD) DiffValues() []float64 {
+	return this.DIFF.Values()
+}
 
 func (this *MACD) OscValues() []float64 {
 	return this.Values()
