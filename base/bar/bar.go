@@ -26,7 +26,7 @@ type Bar struct {
 	Type     BarType
 }
 
-func (this *Bar) get(which BarField) float64 {
+func (this *Bar) Get(which BarField) float64 {
 	switch which {
 	case Open:
 		return this.Open

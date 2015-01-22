@@ -1,7 +1,9 @@
-package bar
+package base
 
 import (
 	"fmt"
+	"quant/base/bar"
+	"quant/base/series"
 )
 
 func init() {
@@ -11,10 +13,10 @@ func init() {
 }
 
 var (
-	BarManager = map[string]*BarSeries{}
+	BarManager = map[string]*series.BarSeries{}
 )
 
-func StoreBarToManager(symbol string, bar_ Bar) {
+func StoreBarToManager(symbol string, bar_ bar.Bar) {
 	barSeries, ok := BarManager[symbol]
 	if ok {
 		barSeries.AppendBar(bar_)
@@ -24,14 +26,14 @@ func StoreBarToManager(symbol string, bar_ Bar) {
 	}
 }
 
-func InitBarManagerWithSymbol(symbol string) *BarSeries {
+func InitBarManagerWithSymbol(symbol string) *series.BarSeries {
 	oldBarSeries, ok := BarManager[symbol]
 	if ok {
 		return oldBarSeries
 	}
 
 	// new series
-	barSeries := NewBarSeries()
+	barSeries := series.NewBarSeries()
 	barSeries.Symbol = symbol
 	BarManager[symbol] = barSeries
 	return barSeries

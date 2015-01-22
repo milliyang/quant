@@ -3,6 +3,7 @@ package quant
 import (
 	"errors"
 	"fmt"
+	"quant/base"
 	"quant/base/bar"
 	"quant/base/strategy"
 	"quant/provider"
@@ -88,7 +89,7 @@ func Run() {
 				*/
 				c := v.Interface().(strategy.IStrategy)
 
-				barseries := bar.InitBarManagerWithSymbol(ins)
+				barseries := base.InitBarManagerWithSymbol(ins)
 
 				c.Init(ins, barseries)
 				oneProject.allStrategy = append(oneProject.allStrategy, c)
@@ -165,7 +166,7 @@ func (this *Quant) handleOneBar(dgram *provider.Datagram) {
 	} else {
 
 		newBar := bar.NewBar(dgram.Time, dgram.Open, dgram.High, dgram.Low, dgram.Close, dgram.Volumn, dgram.Amount)
-		bar.StoreBarToManager(dgram.Symbol, *newBar)
+		base.StoreBarToManager(dgram.Symbol, *newBar)
 		// for each instrument , for each bar
 		for _, oneProject := range DefaultQuant.Projects {
 			for _, oneStrategy := range oneProject.allStrategy {

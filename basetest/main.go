@@ -8,7 +8,7 @@ import (
 
 func main() {
 
-	sma := indicator.NewSMA(6)
+	sma := indicator.NewSMA(nil, 6)
 
 	now := time.Now()
 	var i64 float64

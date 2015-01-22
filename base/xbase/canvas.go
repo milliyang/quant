@@ -2,6 +2,7 @@ package xbase
 
 import (
 	"fmt"
+	"quant/base/bar"
 	"time"
 )
 
@@ -13,13 +14,14 @@ func init() {
 
 type ICanvas interface {
 	DrawLine(int, []time.Time, []float64, int)
-	DrawBar(int, []time.Time, []float64, int)
 
 	DrawBuy(int, []time.Time, []float64, int)
 	DrawSell(int, []time.Time, []float64, int)
 
 	DrawSpark(int, []time.Time, []float64, int)
 	DrawShit(int, []time.Time, []float64, int)
+
+	DrawBar(int, []bar.Bar, int)
 
 	// canvas.DrawLine(table, []time.Time, []float64, color)
 	// canvas.DrawBar(table,  []time.Time, []bar.Bar, color)

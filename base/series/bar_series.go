@@ -1,8 +1,9 @@
-package bar
+package series
 
 import (
 	"errors"
 	"fmt"
+	"quant/base/bar"
 	"quant/base/xbase"
 	_ "reflect"
 	"time"
@@ -17,9 +18,9 @@ type BarSeries struct {
 	StartTime      time.Time
 	EndTime        time.Time
 	DateTime       []time.Time
-	bars           []Bar
-	barField       BarField
-	mapDatetimeBar map[int]Bar
+	bars           []bar.Bar
+	barField       bar.BarField
+	mapDatetimeBar map[int]bar.Bar
 
 	InnerChilds []xbase.ISeries
 	InnerParent xbase.ISeries // always nil
@@ -36,7 +37,7 @@ func (this *BarSeries) Keys() []time.Time {
 func (this *BarSeries) Values() []float64 {
 	all := []float64{}
 	for _, item := range this.bars {
-		all = append(all, item.get(this.barField))
+		all = append(all, item.Get(this.barField))
 	}
 	return all
 
@@ -76,7 +77,7 @@ func (this *BarSeries) ValueAtIndex(index int) float64 {
 		fmt.Println("OutOfArray: %v %v", len(this.bars), index)
 		panic(index)
 	}
-	return this.bars[index].get(this.barField)
+	return this.bars[index].Get(this.barField)
 }
 
 func NewBarSeries() *BarSeries {
@@ -87,10 +88,10 @@ func NewBarSeries() *BarSeries {
 
 func (this *BarSeries) Init(parent xbase.ISeries) {
 	this.DateTime = []time.Time{}
-	this.bars = []Bar{}
-	this.mapDatetimeBar = map[int]Bar{}
+	this.bars = []bar.Bar{}
+	this.mapDatetimeBar = map[int]bar.Bar{}
 	this.InnerParent = parent
-	this.barField = Close // default use close
+	this.barField = bar.Close // default use close
 }
 
 func (this *BarSeries) Match(symbol string) bool {
@@ -112,9 +113,9 @@ func (this *BarSeries) Append(datetime *time.Time, value float64) {
 	panic(ErrInvalidUseOfBarSeries)
 }
 
-func (this *BarSeries) AppendBar(bar_ Bar) {
+func (this *BarSeries) AppendBar(bar_ bar.Bar) {
 	if debug {
-		fmt.Println("BarSeries.Append:", bar_.get(this.barField))
+		fmt.Println("BarSeries.Append:", bar_.Get(this.barField))
 	}
 
 	datetime := bar_.DateTime
@@ -139,7 +140,41 @@ func (this *BarSeries) AppendBar(bar_ Bar) {
 	this.bars = append(this.bars, bar_)
 
 	for _, child := range this.InnerChilds {
-		// fmt.Println("child iseries append", this.Symbol, bar_.get(this.barField), reflect.TypeOf(child), child.Count())
-		child.Append(&datetime, bar_.get(this.barField))
+		// fmt.Println("child iseries append", this.Symbol, bar_.Get(this.barField), reflect.TypeOf(child), child.Count())
+		child.Append(&datetime, bar_.Get(this.barField))
 	}
+}
+
+// indicator.IIndicator.OnMeasure
+
+// num of table, X cordirate [datetime count], Y cordirate [min, max, num, percent]
+func (this *BarSeries) OnMeasure() (int, int, float64, float64, int, float64) {
+
+	// put it here now.
+	var min, max float64
+	var num int
+
+	for idx, bar_ := range this.bars {
+		num = idx
+		value := bar_.Get(this.barField)
+		if value < min {
+			min = value
+		}
+		if value > max {
+			value = max
+		}
+	}
+	return 1, len(this.DateTime), min, max, num, 100
+}
+
+// indicator.IIndicator.OnDraw(ICanvas)
+func (this *BarSeries) OnDraw(canvas xbase.ICanvas) {
+	fmt.Println("symbol", this.Symbol, "Bars onDraw")
+
+	canvas.DrawBar(0, this.bars, 1)
+
+	// canvas.DrawBuy(table,  []time.Time, []float64,color)
+	// canvas.DrawSell(table, []time.Time, []float64,color)
+	// canvas.DrawSpark(table,[]time.Time, []float64,color)
+	// canvas.DrawShit(table, []time.Time, []float64,color)
 }
