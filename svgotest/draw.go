@@ -39,11 +39,11 @@ func DrawData() {
 
 	//
 	fmt.Println("draw fSeries")
-	svgo.Draw(fSeries)
-	svgo.Draw(sma)
-	svgo.Draw(smaOfSma)
-	svgo.Draw(ema)
-	svgo.Draw(macd)
+	svgo.TestDraw(fSeries)
+	svgo.TestDraw(sma)
+	svgo.TestDraw(smaOfSma)
+	svgo.TestDraw(ema)
+	svgo.TestDraw(macd)
 
 	fmt.Println("dodrawing")
 	svgo.TestDoDrawing()

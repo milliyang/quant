@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"quant/base/bar"
 	"quant/base/series"
+	"quant/base/xbase"
+	_ "quant/svgo"
 )
 
 const (
@@ -20,6 +22,8 @@ type Strategy struct {
 	Name      string
 	Symbol    string
 	BarSeries *series.BarSeries
+
+	mapIndicator map[int][]xbase.IIndecator
 }
 
 func (this *Strategy) Init(symbol string, barSeries *series.BarSeries) {
@@ -29,6 +33,8 @@ func (this *Strategy) Init(symbol string, barSeries *series.BarSeries) {
 	this.Name = "Strategy"
 	this.Symbol = symbol
 	this.BarSeries = barSeries
+
+	this.mapIndicator = map[int][]xbase.IIndecator{}
 }
 
 func (this *Strategy) Match(symbol string) bool {
@@ -57,6 +63,29 @@ func (this *Strategy) OnBar(bar bar.Bar) {
 
 func (this *Strategy) OnBarSlice(size int) {
 
+}
+
+func (this *Strategy) Draw(table int, indicator_ xbase.IIndecator) {
+
+	indicatorSlice, ok := this.mapIndicator[table]
+	if ok {
+		indicatorSlice = append(indicatorSlice, indicator_)
+	} else {
+		this.mapIndicator[table] = []xbase.IIndecator{indicator_}
+	}
+}
+
+func (this *Strategy) OnDraw(table int, indicator_ xbase.IIndecator) {
+
+	indicatorSlice, ok := this.mapIndicator[table]
+	if ok {
+		indicatorSlice = append(indicatorSlice, indicator_)
+	} else {
+		this.mapIndicator[table] = []xbase.IIndecator{indicator_}
+	}
+
+	// svgo.TestDraw(indicator_)
+	// this.indicators = append(this.indicators, indicator_)
 }
 
 type IStrategy interface {

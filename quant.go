@@ -7,6 +7,7 @@ import (
 	"quant/base/bar"
 	"quant/base/strategy"
 	"quant/provider"
+	"quant/svgo"
 	"reflect"
 	"time"
 
@@ -143,6 +144,9 @@ func Run() {
 			ss.OnStrategyStop()
 		}
 	}
+
+	fmt.Println("Strategy Finish!!!")
+	svgo.TestDoDrawing()
 }
 
 func (this *Quant) handleOneBar(dgram *provider.Datagram) {
