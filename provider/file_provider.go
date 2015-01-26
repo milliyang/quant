@@ -22,7 +22,7 @@ var (
 type FileProvider struct {
 	Path          string
 	Symbols       []string
-	cacheDatagram []*Datagram
+	cacheDatagram []*Datagram `json:"-" `
 }
 
 func NewFileProvider(path string) *FileProvider {

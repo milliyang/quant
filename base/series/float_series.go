@@ -187,7 +187,7 @@ func (this *FloatSeries) OnMeasure() (int, int, float64, float64, int, float64) 
 func (this *FloatSeries) OnDraw(canvas xbase.ICanvas) {
 	fmt.Println(this.Name, "symbol", this.Symbol, "onDraw")
 
-	canvas.DrawLine(1, this.DateTime, this.Data, 1)
+	canvas.DrawLine(this.DateTime, this.Data, 1)
 	// canvas.DrawBar(table,  []time.Time, []bar.Bar, color)
 
 	// canvas.DrawBuy(table,  []time.Time, []float64,color)

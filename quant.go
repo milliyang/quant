@@ -6,8 +6,8 @@ import (
 	"quant/base"
 	"quant/base/bar"
 	"quant/base/strategy"
+	_ "quant/canvas"
 	"quant/provider"
-	"quant/svgo"
 	"reflect"
 	"time"
 
@@ -93,7 +93,8 @@ func Run() {
 				barseries := base.InitBarManagerWithSymbol(ins)
 
 				c.Init(ins, barseries)
-				oneProject.allStrategy = append(oneProject.allStrategy, c)
+				oneProject.AllStrategy = append(oneProject.AllStrategy, c)
+				oneProject.MapStrategy[c.Key()] = c
 			}
 		}
 	}
@@ -126,7 +127,7 @@ func Run() {
 
 	// start all strategy
 	for _, oneProject := range DefaultQuant.Projects {
-		for _, ss := range oneProject.allStrategy {
+		for _, ss := range oneProject.AllStrategy {
 			ss.OnStrategyStart()
 		}
 	}
@@ -140,13 +141,13 @@ func Run() {
 
 	// start all strategy
 	for _, oneProject := range DefaultQuant.Projects {
-		for _, ss := range oneProject.allStrategy {
+		for _, ss := range oneProject.AllStrategy {
 			ss.OnStrategyStop()
 		}
 	}
 
 	fmt.Println("Strategy Finish!!!")
-	svgo.TestDoDrawing()
+	// svgo.TestDoDrawing()
 }
 
 func (this *Quant) handleOneBar(dgram *provider.Datagram) {
@@ -154,7 +155,7 @@ func (this *Quant) handleOneBar(dgram *provider.Datagram) {
 		// ToDo:
 		// not ready yet, haven't figure out how to implement it
 		for _, oneProject := range DefaultQuant.Projects {
-			for _, oneStrategy := range oneProject.allStrategy {
+			for _, oneStrategy := range oneProject.AllStrategy {
 				return
 
 				// ToDo:
@@ -163,7 +164,7 @@ func (this *Quant) handleOneBar(dgram *provider.Datagram) {
 		}
 	} else if dgram.Event == provider.EventBarSlice {
 		for _, oneProject := range DefaultQuant.Projects {
-			for _, oneStrategy := range oneProject.allStrategy {
+			for _, oneStrategy := range oneProject.AllStrategy {
 				oneStrategy.OnBarSlice(1)
 			}
 		}
@@ -173,7 +174,7 @@ func (this *Quant) handleOneBar(dgram *provider.Datagram) {
 		base.StoreBarToManager(dgram.Symbol, *newBar)
 		// for each instrument , for each bar
 		for _, oneProject := range DefaultQuant.Projects {
-			for _, oneStrategy := range oneProject.allStrategy {
+			for _, oneStrategy := range oneProject.AllStrategy {
 				if oneStrategy.Match(dgram.Symbol) {
 					oneStrategy.OnBar(*newBar)
 				}

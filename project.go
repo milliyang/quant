@@ -14,13 +14,16 @@ func init() {
 type Project struct {
 	Name            string
 	Instrucment     []string
+	AllStrategy     []strategy.IStrategy
 	basicStrategies []interface{}
-	allStrategy     []strategy.IStrategy
+	MapStrategy     map[string]strategy.IStrategy
+	// key: Strategy.Name + Instrucment
 }
 
 func NewProject() *Project {
 	project := Project{}
-	project.allStrategy = []strategy.IStrategy{}
+	project.AllStrategy = []strategy.IStrategy{}
+	project.MapStrategy = map[string]strategy.IStrategy{}
 
 	registerProject(&project)
 	return &project

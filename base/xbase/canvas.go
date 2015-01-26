@@ -13,15 +13,15 @@ func init() {
 }
 
 type ICanvas interface {
-	DrawLine(int, []time.Time, []float64, int)
+	DrawLine([]time.Time, []float64, int)
 
-	DrawBuy(int, []time.Time, []float64, int)
-	DrawSell(int, []time.Time, []float64, int)
+	DrawBuy([]time.Time, []float64, int)
+	DrawSell([]time.Time, []float64, int)
 
-	DrawSpark(int, []time.Time, []float64, int)
-	DrawShit(int, []time.Time, []float64, int)
+	DrawSpark([]time.Time, []float64, int)
+	DrawShit([]time.Time, []float64, int)
 
-	DrawBar(int, []bar.Bar, int)
+	DrawBar([]bar.Bar, int)
 
 	// canvas.DrawLine(table, []time.Time, []float64, color)
 	// canvas.DrawBar(table,  []time.Time, []bar.Bar, color)

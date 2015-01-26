@@ -5,7 +5,7 @@ import (
 	"quant/base/bar"
 	"quant/base/series"
 	"quant/base/xbase"
-	_ "quant/svgo"
+	"quant/canvas"
 )
 
 const (
@@ -19,11 +19,12 @@ func init() {
 }
 
 type Strategy struct {
-	Name      string
-	Symbol    string
-	BarSeries *series.BarSeries
-
-	mapIndicator map[int][]xbase.IIndecator
+	Name         string
+	Symbol       string
+	BarSeries    *series.BarSeries          `json:"-" `
+	mapIndicator map[int][]xbase.IIndecator `json:"-" `
+	drawCanvas   []*canvas.Canvas
+	drawed       bool
 }
 
 func (this *Strategy) Init(symbol string, barSeries *series.BarSeries) {
@@ -35,6 +36,11 @@ func (this *Strategy) Init(symbol string, barSeries *series.BarSeries) {
 	this.BarSeries = barSeries
 
 	this.mapIndicator = map[int][]xbase.IIndecator{}
+	this.drawed = false
+}
+
+func (this *Strategy) Key() string {
+	return this.Name + this.Symbol
 }
 
 func (this *Strategy) Match(symbol string) bool {
@@ -75,21 +81,33 @@ func (this *Strategy) Draw(table int, indicator_ xbase.IIndecator) {
 	}
 }
 
-func (this *Strategy) OnDraw(table int, indicator_ xbase.IIndecator) {
+func (this *Strategy) DoSvgDrawing() []string {
 
-	indicatorSlice, ok := this.mapIndicator[table]
-	if ok {
-		indicatorSlice = append(indicatorSlice, indicator_)
-	} else {
-		this.mapIndicator[table] = []xbase.IIndecator{indicator_}
+	tables := []string{}
+
+	if !this.drawed {
+		this.drawed = true
+
+		for _, indicatorSlice := range this.mapIndicator {
+			newCanvas := canvas.NewCanvas()
+			this.drawCanvas = append(this.drawCanvas, newCanvas)
+
+			// do drawing
+			for _, oneIndicator := range indicatorSlice {
+				newCanvas.Draw(oneIndicator)
+			}
+		}
 	}
 
-	// svgo.TestDraw(indicator_)
-	// this.indicators = append(this.indicators, indicator_)
+	for _, canvas := range this.drawCanvas {
+		tables = append(tables, canvas.GetResult())
+	}
+	return tables
 }
 
 type IStrategy interface {
 	Init(string, *series.BarSeries)
+	Key() string
 	Match(string) bool
 
 	OnStrategyStart()
@@ -98,7 +116,8 @@ type IStrategy interface {
 	OnBarOpen(bar.Bar)
 	OnBar(bar.Bar)
 	OnBarSlice(int)
-
 	// public virtual void OnTrade(Trade trade)
 	// public virtual void OnQuote(Quote quote)
+
+	DoSvgDrawing() []string
 }

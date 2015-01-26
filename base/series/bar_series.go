@@ -22,8 +22,8 @@ type BarSeries struct {
 	barField       bar.BarField
 	mapDatetimeBar map[int]bar.Bar
 
-	InnerChilds []xbase.ISeries
-	InnerParent xbase.ISeries // always nil
+	InnerChilds []xbase.ISeries `json:"-" `
+	InnerParent xbase.ISeries   `json:"-" ` // always nil
 }
 
 func (this *BarSeries) Keys() []time.Time {
@@ -90,6 +90,7 @@ func (this *BarSeries) Init(parent xbase.ISeries) {
 	this.DateTime = []time.Time{}
 	this.bars = []bar.Bar{}
 	this.mapDatetimeBar = map[int]bar.Bar{}
+
 	this.InnerParent = parent
 	this.barField = bar.Close // default use close
 }
@@ -171,7 +172,7 @@ func (this *BarSeries) OnMeasure() (int, int, float64, float64, int, float64) {
 func (this *BarSeries) OnDraw(canvas xbase.ICanvas) {
 	fmt.Println("symbol", this.Symbol, "Bars onDraw")
 
-	canvas.DrawBar(0, this.bars, 1)
+	canvas.DrawBar(this.bars, 1)
 
 	// canvas.DrawBuy(table,  []time.Time, []float64,color)
 	// canvas.DrawSell(table, []time.Time, []float64,color)

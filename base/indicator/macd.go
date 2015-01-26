@@ -150,11 +150,11 @@ func (this *MACD) OnMeasure() (int, int, float64, float64, int, float64) {
 func (this *MACD) OnDraw(canvas xbase.ICanvas) {
 	fmt.Println(this.Name, "symbol", this.Symbol, "onDraw")
 
-	canvas.DrawLine(1, this.DateTime, this.Data, 1)
-	// canvas.DrawBar(table,  []time.Time, []bar.Bar, color)
+	canvas.DrawLine(this.DateTime, this.Data, 1)
+	// canvas.DrawBar([]time.Time, []bar.Bar, color)
 
-	// canvas.DrawBuy(table,  []time.Time, []float64,color)
-	// canvas.DrawSell(table, []time.Time, []float64,color)
-	// canvas.DrawSpark(table,[]time.Time, []float64,color)
-	// canvas.DrawShit(table, []time.Time, []float64,color)
+	// canvas.DrawBuy([]time.Time, []float64,color)
+	// canvas.DrawSell([]time.Time, []float64,color)
+	// canvas.DrawSpark([]time.Time, []float64,color)
+	// canvas.DrawShit([]time.Time, []float64,color)
 }
