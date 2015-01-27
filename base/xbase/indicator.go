@@ -2,6 +2,7 @@ package xbase
 
 import (
 	"fmt"
+	"time"
 )
 
 func init() {
@@ -11,6 +12,6 @@ func init() {
 }
 
 type IIndecator interface {
-	OnMeasure() (int, int, float64, float64, int, float64) // X cordirate [datetime count], Y cordirate [min, max, num, percent]
+	OnMeasure(time.Time, time.Time) (int, float64, float64, int, float64) // X cordirate [datetime count], Y cordirate [min, max, num, percent]
 	OnDraw(ICanvas)
 }

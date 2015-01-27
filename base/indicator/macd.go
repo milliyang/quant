@@ -128,7 +128,7 @@ func (this *MACD) OscValues() []float64 {
 // indicator.IIndicator.OnMeasure
 
 // num of table, X cordirate [datetime count], Y cordirate [min, max, num, percent]
-func (this *MACD) OnMeasure() (int, int, float64, float64, int, float64) {
+func (this *MACD) OnMeasure(start, end time.Time) (int, float64, float64, int, float64) {
 
 	// put it here now.
 	var min, max float64
@@ -143,7 +143,7 @@ func (this *MACD) OnMeasure() (int, int, float64, float64, int, float64) {
 			value = max
 		}
 	}
-	return 1, len(this.DateTime), min, max, num, 100
+	return len(this.DateTime), min, max, num, 100
 }
 
 // indicator.IIndicator.OnDraw(ICanvas)

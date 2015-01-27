@@ -29,6 +29,12 @@ type FloatSeries struct {
 
 	InnerParent xbase.ISeries
 	InnerChilds []xbase.ISeries
+
+	// use between OnMeasure() && OnDraw()
+	drawStart    time.Time
+	drawEnd      time.Time
+	drawStartIdx int
+	drawEndIdx   int
 }
 
 func (this *FloatSeries) Keys() []time.Time {
@@ -164,15 +170,31 @@ func (this *FloatSeries) Append(datetime *time.Time, value float64) {
 
 // indicator.IIndicator.OnMeasure
 
-// num of table, X cordirate [datetime count], Y cordirate [min, max, num, percent]
-func (this *FloatSeries) OnMeasure() (int, int, float64, float64, int, float64) {
+// X cordirate [datetime count], Y cordirate [min, max, num, percent]
+func (this *FloatSeries) OnMeasure(start, end time.Time) (int, float64, float64, int, float64) {
+	this.drawStart = start
+	this.drawEnd = end
+
+	this.drawStartIdx = -1
+	this.drawEndIdx = -1
 
 	// put it here now.
 	var min, max float64
 	var num int
 
-	for idx, value := range this.Data {
-		num = idx
+	for idx, oneTime := range this.DateTime {
+		if oneTime.Before(oneTime) {
+			continue
+		} else if oneTime.After(this.drawEnd) {
+			continue
+		}
+		if this.drawStartIdx == -1 {
+			this.drawStartIdx = idx
+		}
+		this.drawEndIdx = idx
+
+		value := this.Data[idx]
+		num++
 		if value < min {
 			min = value
 		}
@@ -180,14 +202,18 @@ func (this *FloatSeries) OnMeasure() (int, int, float64, float64, int, float64) 
 			value = max
 		}
 	}
-	return 1, len(this.DateTime), min, max, num, 100
+
+	return len(this.DateTime), min, max, num, 100
 }
 
 // indicator.IIndicator.OnDraw(ICanvas)
 func (this *FloatSeries) OnDraw(canvas xbase.ICanvas) {
 	fmt.Println(this.Name, "symbol", this.Symbol, "onDraw")
+	if this.drawStartIdx == -1 {
+		return
+	}
+	canvas.DrawLine(this.DateTime[this.drawStartIdx:this.drawEndIdx], this.Data[this.drawStartIdx:this.drawEndIdx], 1)
 
-	canvas.DrawLine(this.DateTime, this.Data, 1)
 	// canvas.DrawBar(table,  []time.Time, []bar.Bar, color)
 
 	// canvas.DrawBuy(table,  []time.Time, []float64,color)

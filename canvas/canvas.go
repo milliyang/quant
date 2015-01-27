@@ -13,7 +13,12 @@ import (
 var (
 	MAGNIFY_FACTOR   int     = 100
 	MAGNIFY_FACTOR_F float64 = 100
+	TIME_ORIGIN      time.Time
 )
+
+func init() {
+	TIME_ORIGIN = time.Date(1970, time.January, 1, 0, 0, 0, 0, time.Local)
+}
 
 // implement quant/base/indicator.ICanvas
 type Canvas struct {
@@ -21,6 +26,12 @@ type Canvas struct {
 	indicators []xbase.IIndecator
 	svgCanvas  *svg.SVG
 	buffer     *bytes.Buffer
+
+	xNum     int
+	yMin     float64
+	yMax     float64
+	yNum     int
+	yPercent float64
 }
 
 func NewCanvas() *Canvas {
@@ -31,25 +42,30 @@ func NewCanvas() *Canvas {
 	return self
 }
 
-type Table struct {
-	Max     float64
-	Min     float64
-	NumY    int
-	NumX    int
-	Percent float64
-}
-
 // xbase.ICanvas
 func (this *Canvas) Draw(indicator_ xbase.IIndecator) {
 	this.indicators = append(this.indicators, indicator_)
 }
 
 func (this *Canvas) doRealDrawing() {
-	//(int, int, float64, float64, int, float64) // X cordirate [datetime count], Y cordirate [min, max, num, percent]
+	//(int, float64, float64, int, float64) // X cordirate [datetime count], Y cordirate [min, max, num, percent]
 
 	for _, ind := range this.indicators {
-		// table, timeNum, min, max, num, percent := ind.OnMeasure()
-		ind.OnMeasure()
+		xnum, ymin, ymax, ynum, ypercent := ind.OnMeasure(TIME_ORIGIN, time.Now())
+
+		if xnum > this.xNum {
+			this.xNum = xnum
+		}
+		if ynum > this.yNum {
+			this.yNum = ynum
+		}
+		if ymin < this.yMin {
+			this.yMin = ymin
+		}
+		if ymax > this.yMax {
+			this.yMax = ymax
+		}
+		this.yPercent = ypercent // useless currently
 	}
 
 	for _, ind := range this.indicators {
