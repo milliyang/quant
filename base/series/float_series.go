@@ -203,6 +203,8 @@ func (this *FloatSeries) OnMeasure(start, end time.Time) (int, float64, float64,
 		}
 	}
 
+	fmt.Println("FloatSeries OnmMeasure", min, max, num, 100)
+
 	return len(this.DateTime), min, max, num, 100
 }
 
@@ -220,4 +222,8 @@ func (this *FloatSeries) OnDraw(canvas xbase.ICanvas) {
 	// canvas.DrawSell(table, []time.Time, []float64,color)
 	// canvas.DrawSpark(table,[]time.Time, []float64,color)
 	// canvas.DrawShit(table, []time.Time, []float64,color)
+}
+
+func (this *FloatSeries) OnLayout() []time.Time {
+	return this.DateTime
 }

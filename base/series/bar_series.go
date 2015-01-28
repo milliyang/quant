@@ -155,17 +155,29 @@ func (this *BarSeries) OnMeasure(start, end time.Time) (int, float64, float64, i
 	var min, max float64
 	var num int
 
+	min = 10000
+	max = -10000
 	for idx, bar_ := range this.bars {
 		num = idx
 		value := bar_.Get(this.barField)
+
+		//fmt.Println("value", value)
+
 		if value < min {
 			min = value
 		}
 		if value > max {
-			value = max
+			max = value
 		}
 	}
+
+	fmt.Println("BarSeries OnmMeasure", min, max, num, 100)
+
 	return len(this.DateTime), min, max, num, 100
+}
+
+func (this *BarSeries) OnLayout() []time.Time {
+	return this.DateTime
 }
 
 // indicator.IIndicator.OnDraw(ICanvas)

@@ -83,5 +83,5 @@ func NewBar(datetime, open, high, low, close_, volumn, size string) *Bar {
 
 func (this *Bar) ToString() string {
 	return fmt.Sprintf("%d-%02d-%02d %f %f %f %f %f %f", this.DateTime.Year(), this.DateTime.Month(), this.DateTime.Day(),
-		this.Open, this.High, this.Low, this.Low, this.Volumn, this.Size)
+		this.Open, this.High, this.Low, this.Close, this.Volumn, this.Size)
 }
