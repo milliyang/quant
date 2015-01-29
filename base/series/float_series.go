@@ -25,6 +25,7 @@ type FloatSeries struct {
 	EndTime         time.Time
 	DateTime        []time.Time
 	Data            []float64
+	Color           int
 	MapDatetimeData map[int]float64 // map[seconds]value
 
 	InnerParent xbase.ISeries
@@ -102,15 +103,16 @@ func (this *FloatSeries) ValueAtIndex(index int) float64 {
 
 func NewFloatSeries() *FloatSeries {
 	s := &FloatSeries{}
-	s.Init(nil)
+	s.Init(nil, 0)
 	return s
 }
 
-func (this *FloatSeries) Init(parent xbase.ISeries) {
+func (this *FloatSeries) Init(parent xbase.ISeries, color int) {
 	this.DateTime = []time.Time{}
 	this.Data = []float64{}
 	this.MapDatetimeData = map[int]float64{}
 	this.InnerParent = parent
+	this.Color = color
 
 	// [GoBug Tag00001]??
 	//
@@ -119,6 +121,14 @@ func (this *FloatSeries) Init(parent xbase.ISeries) {
 	// if parent != nil {
 	// 	parent.AddChild(this)
 	// }
+}
+
+func (this *FloatSeries) InitWorkaround(parent xbase.ISeries, color int) {
+
+	this.Init(parent, color)
+	if parent != nil {
+		parent.AddChild(this)
+	}
 }
 
 func (this *FloatSeries) Match(symbol string) bool {
@@ -172,29 +182,36 @@ func (this *FloatSeries) Append(datetime *time.Time, value float64) {
 
 // X cordirate [datetime count], Y cordirate [min, max, num, percent]
 func (this *FloatSeries) OnMeasure(start, end time.Time) (int, float64, float64, int, float64) {
+	if debug {
+		fmt.Println("FloatSeries ", this.Name, "symbol", this.Symbol, "OnMeasure")
+	}
 	this.drawStart = start
 	this.drawEnd = end
 
-	this.drawStartIdx = -1
-	this.drawEndIdx = -1
+	this.drawStartIdx = 0
+	this.drawEndIdx = 0
 
 	// put it here now.
 	var min, max float64
 	var num int
 
+	min = 10000
+	max = -10000
+
 	for idx, oneTime := range this.DateTime {
-		if oneTime.Before(oneTime) {
+		if oneTime.Before(this.drawStart) {
 			continue
 		} else if oneTime.After(this.drawEnd) {
 			continue
 		}
-		if this.drawStartIdx == -1 {
+
+		if num == 0 {
 			this.drawStartIdx = idx
 		}
-		this.drawEndIdx = idx
+		this.drawEndIdx = idx + 1
+		num++
 
 		value := this.Data[idx]
-		num++
 		if value < min {
 			min = value
 		}
@@ -203,20 +220,24 @@ func (this *FloatSeries) OnMeasure(start, end time.Time) (int, float64, float64,
 		}
 	}
 
-	fmt.Println("FloatSeries OnmMeasure", min, max, num, 100)
+	if debug {
+		fmt.Println("FloatSeries OnMeasure", num, min, max, 100, 100)
+	}
 
-	return len(this.DateTime), min, max, num, 100
+	return num, min, max, 100, 100
 }
 
 // indicator.IIndicator.OnDraw(ICanvas)
 func (this *FloatSeries) OnDraw(canvas xbase.ICanvas) {
-	fmt.Println(this.Name, "symbol", this.Symbol, "onDraw")
-	if this.drawStartIdx == -1 {
+	if len(this.DateTime) == 0 {
 		return
 	}
-	canvas.DrawLine(this.DateTime[this.drawStartIdx:this.drawEndIdx], this.Data[this.drawStartIdx:this.drawEndIdx], 1)
 
-	// canvas.DrawBar(table,  []time.Time, []bar.Bar, color)
+	if debug {
+		fmt.Println("FloatSeries", this.Name, "symbol", this.Symbol, "onDraw")
+		fmt.Println("FloatSeries onDraw", " start:", this.drawStartIdx, " end:", this.drawEndIdx)
+	}
+	canvas.DrawLine(this.DateTime[this.drawStartIdx:this.drawEndIdx], this.Data[this.drawStartIdx:this.drawEndIdx], this.Color)
 
 	// canvas.DrawBuy(table,  []time.Time, []float64,color)
 	// canvas.DrawSell(table, []time.Time, []float64,color)
@@ -225,5 +246,14 @@ func (this *FloatSeries) OnDraw(canvas xbase.ICanvas) {
 }
 
 func (this *FloatSeries) OnLayout() []time.Time {
-	return this.DateTime
+	if debug {
+		fmt.Println("FloatSeries ", this.Name, "symbol", this.Symbol, "OnLayout")
+	}
+	/*
+	 * Note:
+	 *  For a = [0,1,2,3]:
+	 *    a[0:1] means [0]
+	 *    a[0:4] means [0,1,2,3]
+	 */
+	return this.DateTime[this.drawStartIdx:this.drawEndIdx]
 }

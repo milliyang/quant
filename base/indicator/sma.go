@@ -23,7 +23,7 @@ type SMA struct {
 func NewSMA(parent xbase.ISeries, length int) *SMA {
 	s := &SMA{}
 
-	s.Init(parent)
+	s.Init(parent, 0)
 	s.workingValue = []float64{}
 	s.Length = length
 	s.Name = "SMA" + fmt.Sprintf("%2d", length)
@@ -62,8 +62,7 @@ func (this *SMA) Append(datetime *time.Time, value float64) {
 		total += item
 	}
 
-	var num float64
-	num = float64(len(this.workingValue))
+	num := float64(len(this.workingValue))
 	this.FloatSeries.Append(datetime, total/num)
 	return
 }

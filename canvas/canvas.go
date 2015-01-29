@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ajstarks/svgo"
 	"quant/base/bar"
+	"quant/base/color"
 	"quant/base/xbase"
 
 	"time"
@@ -14,6 +15,10 @@ var (
 	MAGNIFY_FACTOR   int     = 100
 	MAGNIFY_FACTOR_F float64 = 100
 	TIME_ORIGIN      time.Time
+
+	DAY100                = 100
+	WIDTH_FOR_100_DAY_BAR = 1200
+	HEIGTH_DEFAULT        = 500
 )
 
 func init() {
@@ -53,8 +58,8 @@ func NewCanvas() *Canvas {
 	self.svgCanvas = svg.New(self.buffer)
 	self.finished = false
 
-	self.rectWidth = 1200
-	self.rectHeight = 500
+	self.rectWidth = WIDTH_FOR_100_DAY_BAR
+	self.rectHeight = HEIGTH_DEFAULT
 
 	self.xNum = 0
 	self.yNum = 0
@@ -73,6 +78,8 @@ func (this *Canvas) Draw(indicator_ xbase.IIndecator) {
 func (this *Canvas) prepareDrawing() {
 	//(int, float64, float64, int, float64) // X cordirate [datetime count], Y cordirate [min, max, num, percent]
 	for idx, ind := range this.indicators {
+
+		// TODO:
 		xnum, ymin, ymax, ynum, ypercent := ind.OnMeasure(TIME_ORIGIN, time.Now())
 
 		if xnum > this.xNum {
@@ -92,6 +99,10 @@ func (this *Canvas) prepareDrawing() {
 	}
 
 	this.xBaseTime = this.indicators[this.xBaseIdx].OnLayout()
+
+	// Resize Rect Width
+	this.rectWidth = (len(this.xBaseTime)/DAY100 + 1) * WIDTH_FOR_100_DAY_BAR
+
 	this.drawItemX = len(this.xBaseTime) + 1
 
 	for idx, oneTime := range this.xBaseTime {
@@ -102,7 +113,17 @@ func (this *Canvas) prepareDrawing() {
 	this.drawStepX = this.rectWidth / (this.drawItemX)
 
 	priceRange := (this.yMax*1.1 - this.yMin*0.9) * 100.0
-	this.drawStepY = int(float64(this.rectHeight) / priceRange)
+
+	this.drawStepY = 0
+	for {
+		if this.drawStepY != 0 {
+			break
+		} else {
+			this.rectHeight += HEIGTH_DEFAULT
+		}
+		this.drawStepY = int(float64(this.rectHeight) / priceRange)
+	}
+
 	this.drawItemY = this.rectHeight / this.drawStepY
 
 	this.barWidth = int(float64(this.drawStepX) * 0.66)
@@ -168,8 +189,30 @@ func (this *Canvas) finishDrawing() {
 	}
 }
 
-func (this *Canvas) DrawLine(times []time.Time, values []float64, color int) {
-	fmt.Println("DrawLine tables:", "times:", len(times), "values:", values, "color:", color)
+func (this *Canvas) DrawLine(times []time.Time, values []float64, color_ int) {
+	if this.finished {
+		return
+	}
+
+	xOffsets := []int{}
+
+	for _, oneTime := range times {
+		num := oneTime.Year()*1000 + oneTime.YearDay()
+		xIdx, ok := this.mapTimeIdx[num]
+		if ok {
+			xOffsets = append(xOffsets, xIdx*this.drawStepX)
+		} else {
+			panic(oneTime)
+		}
+	}
+
+	yOffsets := []int{}
+	for _, onePrice := range values {
+		yOffset := this.rectHeight - int((onePrice-this.yMin*0.9)*100*float64(this.drawStepY))
+		yOffsets = append(yOffsets, yOffset)
+	}
+
+	this.svgCanvas.Polyline(xOffsets, yOffsets, color.GetCssColor(color_))
 }
 
 func (this *Canvas) DrawBar(bars []bar.Bar, color int) {

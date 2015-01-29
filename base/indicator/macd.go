@@ -57,7 +57,7 @@ type MACD struct {
 func NewMACD(parent xbase.ISeries, short, long, dem int) *MACD {
 	s := &MACD{}
 
-	s.Init(parent)
+	s.Init(parent, 0)
 	s.ShortPeriod = short
 	s.LongPeriod = long
 	s.DEMPeriod = dem

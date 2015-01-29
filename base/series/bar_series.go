@@ -24,6 +24,12 @@ type BarSeries struct {
 
 	InnerChilds []xbase.ISeries `json:"-" `
 	InnerParent xbase.ISeries   `json:"-" ` // always nil
+
+	// use between OnMeasure() && OnDraw()
+	drawStartTime time.Time
+	drawEndTime   time.Time
+	drawStartIdx  int
+	drawEndIdx    int
 }
 
 func (this *BarSeries) Keys() []time.Time {
@@ -150,6 +156,10 @@ func (this *BarSeries) AppendBar(bar_ bar.Bar) {
 
 // num of table, X cordirate [datetime count], Y cordirate [min, max, num, percent]
 func (this *BarSeries) OnMeasure(start, end time.Time) (int, float64, float64, int, float64) {
+	this.drawStartTime = start
+	this.drawEndTime = end
+	this.drawStartIdx = 0
+	this.drawEndIdx = 0
 
 	// put it here now.
 	var min, max float64
@@ -158,11 +168,18 @@ func (this *BarSeries) OnMeasure(start, end time.Time) (int, float64, float64, i
 	min = 10000
 	max = -10000
 	for idx, bar_ := range this.bars {
-		num = idx
+		if bar_.DateTime.Before(this.drawStartTime) {
+			continue
+		} else if bar_.DateTime.After(this.drawEndTime) {
+			continue
+		}
+		if num == 0 {
+			this.drawStartIdx = idx
+		}
+		this.drawEndIdx = idx + 1
+		num++
+
 		value := bar_.Get(this.barField)
-
-		//fmt.Println("value", value)
-
 		if value < min {
 			min = value
 		}
@@ -170,21 +187,29 @@ func (this *BarSeries) OnMeasure(start, end time.Time) (int, float64, float64, i
 			max = value
 		}
 	}
-
-	fmt.Println("BarSeries OnmMeasure", min, max, num, 100)
-
-	return len(this.DateTime), min, max, num, 100
+	if debug {
+		fmt.Println("BarSeries OnMeasure", num, min, max, 100, 100)
+	}
+	return num, min, max, 100, 100
 }
 
 func (this *BarSeries) OnLayout() []time.Time {
-	return this.DateTime
+
+	/*
+	 * Note:
+	 *  For a = [0,1,2,3]:
+	 *    a[0:1] means [0]
+	 *    a[0:4] means [0,1,2,3]
+	 */
+	return this.DateTime[this.drawStartIdx:this.drawEndIdx]
 }
 
 // indicator.IIndicator.OnDraw(ICanvas)
 func (this *BarSeries) OnDraw(canvas xbase.ICanvas) {
-	fmt.Println("symbol", this.Symbol, "Bars onDraw")
-
-	canvas.DrawBar(this.bars, 1)
+	if debug {
+		fmt.Println("symbol", this.Symbol, "Bars onDraw")
+	}
+	canvas.DrawBar(this.bars[this.drawStartIdx:this.drawEndIdx], 1)
 
 	// canvas.DrawBuy(table,  []time.Time, []float64,color)
 	// canvas.DrawSell(table, []time.Time, []float64,color)

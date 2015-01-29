@@ -76,6 +76,7 @@ func (this *Strategy) Draw(table int, indicator_ xbase.IIndecator) {
 	indicatorSlice, ok := this.mapIndicator[table]
 	if ok {
 		indicatorSlice = append(indicatorSlice, indicator_)
+		this.mapIndicator[table] = indicatorSlice
 	} else {
 		this.mapIndicator[table] = []xbase.IIndecator{indicator_}
 	}
@@ -89,6 +90,7 @@ func (this *Strategy) DoSvgDrawing() []string {
 		this.drawed = true
 
 		for _, indicatorSlice := range this.mapIndicator {
+
 			newCanvas := canvas.NewCanvas()
 			this.drawCanvas = append(this.drawCanvas, newCanvas)
 

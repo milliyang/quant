@@ -33,7 +33,7 @@ type EMA struct {
 func NewEMA(parent xbase.ISeries, length int) *EMA {
 	s := &EMA{}
 
-	s.Init(parent)
+	s.Init(parent, 0)
 	s.Length = length
 	s.workingYesterday = 0
 	var k float64 = (float64)(length + 1)
