@@ -16,4 +16,5 @@ func init() {
 }
 
 type Instrument struct {
+	Symbol string
 }

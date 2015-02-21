@@ -7,7 +7,6 @@ import (
 	"quant/base/bar"
 	"quant/base/color"
 	"quant/base/xbase"
-
 	"time"
 )
 

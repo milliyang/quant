@@ -1,0 +1,74 @@
+功能:
+1, 历史回测.
+2, 绩效性能报表.
+3,
+
+1. Instrument select.
+2, Project/Solution config.
+   date:start-end
+   invest:amount
+3. Data Provider
+4. Performance
+5. Chart
+6. Monitor
+7, Trade/Quote/Order.
+8, Compare to standard ETF
+9, Report
+
+
+Result.Summary:
+---------------------
+Summary:
+Initial Wealth:
+Final Wealth:
+Value:
+Debt:
+Margin:
+PnL:
+Return:               8.16%
+Annual Return:        0.86%
+Account:          100000.00
+Position:         ??
+Currency:             CNY
+Trades Duration:     356 Days
+
+---------------------
+Transaction:
+Total Transactions:
+Long Transactions:
+Short Transactions:
+Trades Frequency:
+
+---------------------
+All Trades:           237
+Total PnL:            8163.35
+PnL Per Trade:        34.30
+Wining Trades:        128
+Losing Trades:        109
+---------------------------
+Long Trades:          238
+Total PnL:            8163.35
+PnL Per Trade:        34.30
+Wining Trades:        128
+Losing Trades:        109
+---------------------------
+Short Trades:         238
+Total PnL:            8163.35
+PnL Per Trade:        34.30
+Wining Trades:        128
+Losing Trades:        109
+
+
+Result.Chart:
+
+
+Order Manager:
+All | Working | Filled | Cancaled | Rejected
+
+Datetime,  Symbol,    Side,    Type,      Qty, Avg. Price,  Value,  Cost, Charge
+2014-01-01 STO000001  Buy   Market/Limit  1000  3.00  3.00   30000   22.5   0.0075
+
+
+
+
+

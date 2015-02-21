@@ -2,7 +2,9 @@ package strategy
 
 import (
 	"fmt"
+	"quant/base"
 	"quant/base/bar"
+	"quant/base/order"
 	"quant/base/series"
 	"quant/base/xbase"
 	"quant/canvas"
@@ -105,6 +107,24 @@ func (this *Strategy) DoSvgDrawing() []string {
 		tables = append(tables, canvas.GetResult())
 	}
 	return tables
+}
+
+// for easy sending an Market Sell Order.
+// kepp a refer to the returned order. check it's status(StatusFilled/StatusRejected)
+// on the next bar
+func (this *Strategy) Sell(qty int, remark string) *order.Order {
+	o := order.NewMarketOrder(order.SideBuy, qty, remark)
+	o.Symbol = this.Symbol
+
+	base.Send(o)
+	return o
+}
+
+func (this *Strategy) Buy(qty int, remark string) *order.Order {
+	o := order.NewMarketOrder(order.SideBuy, qty, remark)
+	o.Symbol = this.Symbol
+	base.Send(o)
+	return o
 }
 
 type IStrategy interface {

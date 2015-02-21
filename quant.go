@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"time"
 
+	_ "quant/account"
 	_ "quant/base/indicator"
 )
 
