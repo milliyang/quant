@@ -40,6 +40,11 @@ type Datagram struct {
 	Close  string
 	Volumn string
 	Amount string
+
+	// Casino Dicing Game
+	DiceA int
+	DiceB int
+	DiceC int
 }
 
 type IProvider interface {

@@ -3,6 +3,7 @@ package bar
 import (
 	"errors"
 	"fmt"
+	"github.com/milliyang/dice"
 	"strconv"
 	"time"
 )
@@ -24,6 +25,7 @@ type Bar struct {
 	Volumn   float64
 	Size     float64
 	Type     BarType
+	Dice     *dice.DiceRoll // Casino Dicing Game
 }
 
 func (this *Bar) Get(which BarField) float64 {

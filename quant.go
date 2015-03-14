@@ -174,9 +174,6 @@ func (this *Quant) handleOneBar(dgram *provider.Datagram) {
 		newBar := bar.NewBar(dgram.Time, dgram.Open, dgram.High, dgram.Low, dgram.Close, dgram.Volumn, dgram.Amount)
 		base.StoreBarToManager(dgram.Symbol, *newBar)
 
-		//fmt.Print("datagram:", dgram)
-		// fmt.Println(" newbar:", newBar.ToString())
-
 		// for each instrument , for each bar
 		for _, oneProject := range DefaultQuant.Projects {
 			for _, oneStrategy := range oneProject.AllStrategy {

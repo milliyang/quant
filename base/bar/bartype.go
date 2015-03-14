@@ -7,4 +7,5 @@ const (
 	Tick
 	// Volume
 	Range
+	Dice // for Casino Dice Game
 )

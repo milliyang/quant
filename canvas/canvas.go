@@ -78,7 +78,8 @@ func (this *Canvas) prepareDrawing() {
 	//(int, float64, float64, int, float64) // X cordirate [datetime count], Y cordirate [min, max, num, percent]
 	for idx, ind := range this.indicators {
 
-		// TODO:
+		// TODO
+		fmt.Println("[Warn]: ind.OnMeasure(TIME_ORIGIN, time.Now())", TIME_ORIGIN, time.Now())
 		xnum, ymin, ymax, ynum, ypercent := ind.OnMeasure(TIME_ORIGIN, time.Now())
 
 		if xnum > this.xNum {
@@ -145,7 +146,7 @@ func (this *Canvas) startDrawing() {
 	this.svgCanvas.Start(this.rectWidth, this.rectHeight)
 	this.svgCanvas.Rect(0, 0, this.rectWidth, this.rectHeight, "fill:gray;stroke:black")
 
-	return
+	//return
 
 	for i := 0; i < this.drawItemX; i++ {
 		this.svgCanvas.Line(i*this.drawStepX, 0, i*this.drawStepX, this.rectHeight, "fill:none;stroke:white")

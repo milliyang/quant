@@ -209,6 +209,7 @@ func (this *BarSeries) OnDraw(canvas xbase.ICanvas) {
 	if debug {
 		fmt.Println("symbol", this.Symbol, "Bars onDraw")
 	}
+
 	canvas.DrawBar(this.bars[this.drawStartIdx:this.drawEndIdx], 1)
 
 	// canvas.DrawBuy(table,  []time.Time, []float64,color)
