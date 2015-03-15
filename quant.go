@@ -11,6 +11,8 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/milliyang/dice"
+
 	_ "quant/account"
 	_ "quant/base/indicator"
 )
@@ -172,6 +174,13 @@ func (this *Quant) handleOneBar(dgram *provider.Datagram) {
 	} else {
 
 		newBar := bar.NewBar(dgram.Time, dgram.Open, dgram.High, dgram.Low, dgram.Close, dgram.Volumn, dgram.Amount)
+
+		// Sebao Dicing Game
+		if dgram.DiceA > 0 {
+			newBar.Type = bar.Dice
+			newBar.Dice = dice.NewSebaoDiceRoll(dgram.DiceA, dgram.DiceB, dgram.DiceC)
+		}
+
 		base.StoreBarToManager(dgram.Symbol, *newBar)
 
 		// for each instrument , for each bar

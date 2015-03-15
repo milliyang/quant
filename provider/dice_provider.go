@@ -1,10 +1,9 @@
 package provider
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/milliyang/dice"
-	"os"
+	"github.com/milliyang/dice/utils"
 	"sort"
 	"time"
 )
@@ -15,6 +14,9 @@ const (
 	floatLayout    = "%d.00"
 
 	ROUND = 600
+
+	FACES       = 6
+	NUM_OF_DICE = 3
 )
 
 var (
@@ -57,6 +59,8 @@ func (this *DiceProvider) RequestInstrument(symbols []string) error {
 // This Function Will Block, use go provider.Receive()
 func (this *DiceProvider) Receive(outChan chan *Datagram) error {
 
+	var allDiceRolls []*dice.DiceRoll
+
 	for i := 0; i < this.Rounds; i++ {
 
 		data := &Datagram{}
@@ -67,19 +71,19 @@ func (this *DiceProvider) Receive(outChan chan *Datagram) error {
 		data.Amount = "1000.00" // in case crash
 		data.Volumn = "1000.00"
 
-		diceRoll := casinoRoll()
-		// fill it
-		data.DiceA = diceRoll.Rolls[0]
-		data.DiceB = diceRoll.Rolls[1]
-		data.DiceC = diceRoll.Rolls[2]
+		diceRoll := utils.CasinoRoll()
 
-		//total := data.DiceA + data.DiceB + data.DiceC
-		// Hacking
-		//data.High = fmt.Sprintf(floatLayout, total)
-
+		// sort
 		var points sort.IntSlice
 		points = diceRoll.Rolls
 		sort.Sort(points)
+
+		//total := data.DiceA + data.DiceB + data.DiceC
+		// Hacking
+		// fill it
+		data.DiceA = points[0]
+		data.DiceB = points[1]
+		data.DiceC = points[2]
 
 		data.Low = fmt.Sprintf(floatLayout, points[0])
 		data.Open = fmt.Sprintf(floatLayout, points[1])
@@ -92,28 +96,17 @@ func (this *DiceProvider) Receive(outChan chan *Datagram) error {
 		rollDate = rollDate.AddDate(0, 0, 1)
 
 		//fmt.Println(data)
-		//JsonPrint(data)
+		//utils.JsonPrint(data)
 
+		allDiceRolls = append(allDiceRolls, diceRoll)
+	}
+
+	if false {
+		utils.CheckCasinoPoint(allDiceRolls)
+		utils.CheckRandom(allDiceRolls)
 	}
 
 	// close the channel at last, so that range Chan can finish!!
 	close(outChan)
 	return nil
-}
-
-/*
-RollP() generates a new DiceRoll based on the specified parameters.
-*/
-func casinoRoll() *dice.DiceRoll {
-	return dice.RollP(3, 6, 0, false)
-}
-
-func JsonPrint(obj interface{}) {
-	b, err := json.Marshal(obj)
-	if err != nil {
-		fmt.Println("error:", err)
-		return
-	}
-	os.Stdout.Write(b)
-	fmt.Println("")
 }

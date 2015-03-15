@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/ajstarks/svgo"
+	"github.com/milliyang/dice"
+	"github.com/milliyang/dice/utils"
 	"quant/base/bar"
 	"quant/base/color"
 	"quant/base/xbase"
@@ -76,6 +78,8 @@ func (this *Canvas) Draw(indicator_ xbase.IIndecator) {
 
 func (this *Canvas) prepareDrawing() {
 	//(int, float64, float64, int, float64) // X cordirate [datetime count], Y cordirate [min, max, num, percent]
+
+	// Find which indicator has the most fullset of DateTime (X cordirate)
 	for idx, ind := range this.indicators {
 
 		// TODO
@@ -100,20 +104,20 @@ func (this *Canvas) prepareDrawing() {
 
 	this.xBaseTime = this.indicators[this.xBaseIdx].OnLayout()
 
-	// Resize Rect Width
+	// Calc Rect Width
 	this.rectWidth = (len(this.xBaseTime)/DAY100 + 1) * WIDTH_FOR_100_DAY_BAR
 
 	this.drawItemX = len(this.xBaseTime) + 1
+	this.drawStepX = this.rectWidth / (this.drawItemX)
 
 	for idx, oneTime := range this.xBaseTime {
 		num := oneTime.Year()*1000 + oneTime.YearDay()
 		this.mapTimeIdx[num] = idx + 1
 	}
 
-	this.drawStepX = this.rectWidth / (this.drawItemX)
-
 	priceRange := (this.yMax*1.1 - this.yMin*0.9) * 100.0
 
+	// Calc Rect Height
 	this.drawStepY = 0
 	for {
 		if this.drawStepY != 0 {
@@ -123,7 +127,6 @@ func (this *Canvas) prepareDrawing() {
 		}
 		this.drawStepY = int(float64(this.rectHeight) / priceRange)
 	}
-
 	this.drawItemY = this.rectHeight / this.drawStepY
 
 	this.barWidth = int(float64(this.drawStepX) * 0.66)
@@ -146,8 +149,6 @@ func (this *Canvas) startDrawing() {
 	this.svgCanvas.Start(this.rectWidth, this.rectHeight)
 	this.svgCanvas.Rect(0, 0, this.rectWidth, this.rectHeight, "fill:gray;stroke:black")
 
-	//return
-
 	for i := 0; i < this.drawItemX; i++ {
 		this.svgCanvas.Line(i*this.drawStepX, 0, i*this.drawStepX, this.rectHeight, "fill:none;stroke:white")
 	}
@@ -157,8 +158,15 @@ func (this *Canvas) startDrawing() {
 	}
 
 	// Cross Line for Mouse
-	this.svgCanvas.Line(110, 0, 110, this.rectHeight, "fill:none;stroke:red")
-	this.svgCanvas.Line(0, 110, this.rectWidth, 110, "fill:none;stroke:red")
+	// this.svgCanvas.Line(110, 0, 110, this.rectHeight, "fill:none;stroke:red")
+	// this.svgCanvas.Line(0, 110, this.rectWidth, 110, "fill:none;stroke:red")
+
+	// CasinoDicingGame Line for [1,2,3,4,5,6]
+
+	for i := 1.0; i < 7; i = i + 1.0 {
+		yOffset := this.rectHeight - int((i-this.yMin*0.9)*100*float64(this.drawStepY))
+		this.svgCanvas.Line(0, yOffset, this.rectWidth, yOffset, "fill:none;stroke:red")
+	}
 
 	/* draw point
 	x := []int{}
@@ -197,13 +205,8 @@ func (this *Canvas) DrawLine(times []time.Time, values []float64, color_ int) {
 	xOffsets := []int{}
 
 	for _, oneTime := range times {
-		num := oneTime.Year()*1000 + oneTime.YearDay()
-		xIdx, ok := this.mapTimeIdx[num]
-		if ok {
-			xOffsets = append(xOffsets, xIdx*this.drawStepX)
-		} else {
-			panic(oneTime)
-		}
+		xIdx := this.calcXIdxByDatetime(&oneTime)
+		xOffsets = append(xOffsets, this.calcXOffsetByIdx(xIdx))
 	}
 
 	yOffsets := []int{}
@@ -220,8 +223,20 @@ func (this *Canvas) DrawBar(bars []bar.Bar, color int) {
 		return
 	}
 
+	var acc []*dice.DiceRoll
+
 	for _, oneBar := range bars {
-		this.drawOneBar(oneBar)
+		if oneBar.Dice != nil {
+			this.drawOneDiceBar(oneBar)
+			acc = append(acc, oneBar.Dice)
+		} else {
+			this.drawOneBar(oneBar)
+		}
+	}
+
+	if acc != nil {
+		utils.CheckCasinoPoint(acc)
+		utils.CheckRandom(acc)
 	}
 }
 func (this *Canvas) DrawBuy(times []time.Time, values []float64, color int) {
@@ -265,30 +280,93 @@ func (this *Canvas) drawOneBar(bar bar.Bar) {
 		higher = bar.Close
 		barColor = "fill:green;stroke:green"
 	}
+	if barHeight == 0 {
+		barHeight = 1
+	}
 
 	yOffset := int((higher - this.yMin*0.9) * 100 * float64(this.drawStepY))
 
-	num := bar.DateTime.Year()*1000 + bar.DateTime.YearDay()
-	xIdx, ok := this.mapTimeIdx[num]
-	if ok {
-		if barHeight == 0 {
-			barHeight = 1
-		}
-		this.svgCanvas.Rect(xIdx*this.drawStepX-this.barWidthHalf, this.rectHeight-yOffset-barHeight, this.barWidth, barHeight, barColor)
-	} else {
-		panic(bar)
-	}
+	xIdx := this.calcXIdxByDatetime(&bar.DateTime)
+	xOffset := this.calcXOffsetByIdx(xIdx)
 
-	lowPriceOffset := this.rectHeight - int((bar.High-this.yMin*0.9)*100*float64(this.drawStepY))
-	highPriceOffset := this.rectHeight - int((bar.Low-this.yMin*0.9)*100*float64(this.drawStepY))
+	this.svgCanvas.Rect(xOffset-this.barWidthHalf, this.rectHeight-yOffset-barHeight, this.barWidth, barHeight, barColor)
 
-	this.svgCanvas.Line(xIdx*this.drawStepX, lowPriceOffset, xIdx*this.drawStepX, highPriceOffset, barColor)
+	lowPriceOffset := this.calcYOffsetByPrice(bar.High)
+	highPriceOffset := this.calcYOffsetByPrice(bar.Low)
+
+	this.svgCanvas.Line(xOffset, lowPriceOffset, xOffset, highPriceOffset, barColor)
 
 	if false {
-		oo := this.rectHeight - int((bar.Open-this.yMin*0.9)*100*float64(this.drawStepY))
-		this.svgCanvas.Circle(xIdx*this.drawStepX, oo, 5, "fill:pink;stroke:yellow")
-		cc := this.rectHeight - int((bar.Close-this.yMin*0.9)*100*float64(this.drawStepY))
-		this.svgCanvas.Circle(xIdx*this.drawStepX, cc, 5, "fill:yellow;stroke:yellow")
+		oo := this.calcYOffsetByPrice(bar.Open)
+		this.svgCanvas.Circle(xOffset, oo, 5, "fill:pink;stroke:yellow")
+
+		cc := this.calcYOffsetByPrice(bar.Close)
+		this.svgCanvas.Circle(xOffset, cc, 5, "fill:yellow;stroke:yellow")
+	}
+}
+
+func (this *Canvas) drawOneDiceBar(bar bar.Bar) {
+
+	// Android Style: (0,0) is at (Left,Top)
+	var barHeight int
+	var higher float64
+
+	barColor := "fill:red;stroke:red"
+
+	if bar.Close > bar.Open {
+		barHeight = int((bar.Close - bar.Open) * 100 * float64(this.drawStepY))
+		higher = bar.Open
+	} else {
+		barHeight = int((bar.Open - bar.Close) * 100 * float64(this.drawStepY))
+		higher = bar.Close
+		barColor = "fill:green;stroke:green"
+	}
+	if barHeight == 0 {
+		barHeight = 1
 	}
 
+	yOffset := int((higher - this.yMin*0.9) * 100 * float64(this.drawStepY))
+
+	xIdx := this.calcXIdxByDatetime(&bar.DateTime)
+	xOffset := this.calcXOffsetByIdx(xIdx)
+	this.svgCanvas.Rect(xOffset-this.barWidthHalf, this.rectHeight-yOffset-barHeight, this.barWidth, barHeight, barColor)
+
+	lowPriceOffset := this.calcYOffsetByPrice(bar.High)
+	highPriceOffset := this.calcYOffsetByPrice(bar.Low)
+
+	this.svgCanvas.Line(xOffset, lowPriceOffset, xOffset, highPriceOffset, barColor)
+
+	if true {
+		var price float64
+		price = float64(bar.Dice.Rolls[0])
+		AA := this.calcYOffsetByPrice(price)
+		this.svgCanvas.Circle(xOffset, AA, 5, "fill:red;stroke:yellow")
+
+		price = float64(bar.Dice.Rolls[1])
+		BB := this.calcYOffsetByPrice(price)
+		this.svgCanvas.Circle(xOffset, BB, 5, "fill:green;stroke:yellow")
+
+		price = float64(bar.Dice.Rolls[2])
+		CC := this.calcYOffsetByPrice(price)
+		this.svgCanvas.Circle(xOffset, CC, 5, "fill:blue;stroke:yellow")
+	}
+}
+
+func (this *Canvas) calcYOffsetByPrice(price float64) int {
+	yOffset := this.rectHeight - int((price-this.yMin*0.9)*100*float64(this.drawStepY))
+	return yOffset
+}
+
+func (this *Canvas) calcXOffsetByIdx(idx int) int {
+	return idx * this.drawStepX
+}
+
+func (this *Canvas) calcXIdxByDatetime(time_ *time.Time) int {
+	num := time_.Year()*1000 + time_.YearDay()
+	xIdx, ok := this.mapTimeIdx[num]
+	if ok {
+		return xIdx
+	} else {
+		panic(time_)
+	}
 }
