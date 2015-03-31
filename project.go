@@ -2,6 +2,7 @@ package quant
 
 import (
 	"fmt"
+	"quant/account"
 	"quant/base/strategy"
 )
 
@@ -18,13 +19,15 @@ type Project struct {
 	basicStrategies []interface{}
 	MapStrategy     map[string]strategy.IStrategy
 	// key: Strategy.Name + Instrucment
+
+	Account *account.Account
 }
 
 func NewProject() *Project {
 	project := Project{}
 	project.AllStrategy = []strategy.IStrategy{}
 	project.MapStrategy = map[string]strategy.IStrategy{}
-
+	project.Account = account.NewAccount("LeoYang", 5000)
 	registerProject(&project)
 	return &project
 }

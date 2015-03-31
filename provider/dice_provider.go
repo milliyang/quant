@@ -85,10 +85,11 @@ func (this *DiceProvider) Receive(outChan chan *Datagram) error {
 		data.DiceB = points[1]
 		data.DiceC = points[2]
 
-		data.Low = fmt.Sprintf(floatLayout, points[0])
 		data.Open = fmt.Sprintf(floatLayout, points[1])
-		data.Close = fmt.Sprintf(floatLayout, points[2])
-		data.High = fmt.Sprintf(floatLayout, points[2])
+		data.Close = fmt.Sprintf(floatLayout, points[0]+points[1]+points[2])
+
+		data.High = fmt.Sprintf(floatLayout, points[0]+points[1]+points[2])
+		data.Low = fmt.Sprintf(floatLayout, 1)
 
 		outChan <- data
 

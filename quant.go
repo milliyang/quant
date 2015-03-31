@@ -6,6 +6,7 @@ import (
 	"quant/base"
 	"quant/base/bar"
 	"quant/base/strategy"
+	"quant/base/xbase"
 	_ "quant/canvas"
 	"quant/provider"
 	"reflect"
@@ -185,6 +186,11 @@ func (this *Quant) handleOneBar(dgram *provider.Datagram) {
 
 		// for each instrument , for each bar
 		for _, oneProject := range DefaultQuant.Projects {
+
+			if xbase.CasinoDicingGame {
+				/// TODO
+				oneProject.Account.DiceHandleOrderWithDiceRoll(nil, newBar.Dice)
+			}
 			for _, oneStrategy := range oneProject.AllStrategy {
 				if oneStrategy.Match(dgram.Symbol) {
 					oneStrategy.OnBar(*newBar)

@@ -1,6 +1,7 @@
 package account
 
 import (
+	"quant/base/indicator"
 	"quant/base/order"
 )
 
@@ -19,6 +20,9 @@ type Account struct {
 	PnL             float64
 
 	PanddingOrders map[int]*order.Order // key:id
+
+	// CasinoDicingGame
+	PnlIndicator *indicator.DicePnl
 }
 
 func NewAccount(name string, amount float64) *Account {
@@ -26,6 +30,7 @@ func NewAccount(name string, amount float64) *Account {
 	acc.Name = name
 	acc.InitialWealth = amount
 	acc.availableAmount = amount
+	acc.PnlIndicator = indicator.NewDicePnl(amount)
 	return acc
 }
 

@@ -80,7 +80,8 @@ func (this *FileProvider) Receive(outChan chan *Datagram) error {
 	counter := 1
 	for _, datagramPtr := range this.cacheDatagram {
 
-		if datagramPtr.Time <= "2007-01-04" {
+		//if datagramPtr.Time <= "2007-01-04" {
+		if datagramPtr.Time <= "2014-10-04" {
 			continue
 		}
 

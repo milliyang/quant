@@ -14,6 +14,7 @@ func init() {
 
 type ICanvas interface {
 	DrawLine([]time.Time, []float64, int)
+	DrawPoints([]time.Time, []float64, int, bool)
 
 	DrawBuy([]time.Time, []float64, int)
 	DrawSell([]time.Time, []float64, int)
@@ -23,10 +24,6 @@ type ICanvas interface {
 
 	DrawBar([]bar.Bar, int)
 
-	// canvas.DrawLine(table, []time.Time, []float64, color)
-	// canvas.DrawBar(table,  []time.Time, []bar.Bar, color)
-	// canvas.DrawBuy(table,  []time.Time, []float64,color)
-	// canvas.DrawSell(table, []time.Time, []float64,color)
-	// canvas.DrawSpark(table,[]time.Time, []float64,color)
-	// canvas.DrawShit(table, []time.Time, []float64,color)
+	// CasinoDicingGame
+	DrawTextAtPrice([]time.Time, []string, float64, int)
 }

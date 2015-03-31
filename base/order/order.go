@@ -62,6 +62,11 @@ type Order struct {
 	AvgPrice    float64
 	Account     string
 	Text        string
+
+	// Casino Dicing Game
+	DiceBetType   int
+	DiceBetNumber int
+	DiceBetAmt    int
 }
 
 func NewMarketOrder(side, qty int, text string) *Order {

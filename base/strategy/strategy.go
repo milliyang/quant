@@ -143,3 +143,59 @@ type IStrategy interface {
 
 	DoSvgDrawing() []string
 }
+
+/*
+   Define API for CasinoDicingGame, and they all start with Dice
+
+*/
+
+func (this *Strategy) DiceBetBig(money int, text string) *order.Order {
+	o := order.NewDiceOrder(order.DiceBetTypeBig, money, text)
+	base.Send(o)
+	return o
+}
+
+func (this *Strategy) DiceBetSmall(money int, text string) *order.Order {
+	o := order.NewDiceOrder(order.DiceBetTypeSmall, money, text)
+	base.Send(o)
+	return o
+}
+
+func (this *Strategy) DiceBetEven(money int, text string) *order.Order {
+	o := order.NewDiceOrder(order.DiceBetTypeEven, money, text)
+	base.Send(o)
+	return o
+}
+
+func (this *Strategy) DiceBetSingle(money int, text string) *order.Order {
+	o := order.NewDiceOrder(order.DiceBetTypeSingle, money, text)
+	base.Send(o)
+	return o
+}
+
+// number: [4,5,6,...17]
+func (this *Strategy) DiceBetNumber(money, number int, text string) *order.Order {
+	o := order.NewDiceOrderWithNumber(order.DiceBetTypeNumber, money, number, text)
+	base.Send(o)
+	return o
+}
+
+// faceNumber: [1,2,3,4,5,6]
+// odds:  1 to {1,2,3}
+func (this *Strategy) DiceBetFaceNumber(money, faceNumber int, text string) *order.Order {
+	o := order.NewDiceOrderWithNumber(order.DiceBetTypeFaceNumber, money, faceNumber, text)
+	base.Send(o)
+	return o
+}
+
+func (this *Strategy) DiceBetTriple(money int, text string) *order.Order {
+	o := order.NewDiceOrder(order.DiceBetTypeSingle, money, text)
+	base.Send(o)
+	return o
+}
+
+func (this *Strategy) DiceBetTripleNumber(money, number int, text string) *order.Order {
+	o := order.NewDiceOrderWithNumber(order.DiceBetTypeTripleNumber, money, number, text)
+	base.Send(o)
+	return o
+}

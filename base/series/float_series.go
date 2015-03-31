@@ -36,6 +36,9 @@ type FloatSeries struct {
 	drawEnd      time.Time
 	drawStartIdx int
 	drawEndIdx   int
+
+	// Casino Dicing Game
+	casinoDicingGameFlag bool
 }
 
 func (this *FloatSeries) Keys() []time.Time {
@@ -129,6 +132,10 @@ func (this *FloatSeries) InitWorkaround(parent xbase.ISeries, color int) {
 	if parent != nil {
 		parent.AddChild(this)
 	}
+}
+
+func (this *FloatSeries) SetCasinoDicingGame(flag bool) {
+	this.casinoDicingGameFlag = flag
 }
 
 func (this *FloatSeries) Match(symbol string) bool {
@@ -237,7 +244,12 @@ func (this *FloatSeries) OnDraw(canvas xbase.ICanvas) {
 		fmt.Println("FloatSeries", this.Name, "symbol", this.Symbol, "onDraw")
 		fmt.Println("FloatSeries onDraw", " start:", this.drawStartIdx, " end:", this.drawEndIdx)
 	}
-	canvas.DrawLine(this.DateTime[this.drawStartIdx:this.drawEndIdx], this.Data[this.drawStartIdx:this.drawEndIdx], this.Color)
+
+	if this.casinoDicingGameFlag {
+		canvas.DrawPoints(this.DateTime[this.drawStartIdx:this.drawEndIdx], this.Data[this.drawStartIdx:this.drawEndIdx], this.Color, true)
+	} else {
+		canvas.DrawLine(this.DateTime[this.drawStartIdx:this.drawEndIdx], this.Data[this.drawStartIdx:this.drawEndIdx], this.Color)
+	}
 
 	// canvas.DrawBuy(table,  []time.Time, []float64,color)
 	// canvas.DrawSell(table, []time.Time, []float64,color)
