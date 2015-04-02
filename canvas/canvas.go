@@ -340,7 +340,19 @@ func (this *Canvas) DrawTextAtPrice(times []time.Time, values []string, price fl
 	if this.finished {
 		return
 	}
-	fmt.Println("DrawTextAtPrice:", "times:", len(times), "values:", values, "color:", color)
+	//fmt.Println("DrawTextAtPrice:", "times:", len(times), "values:", values, "color:", color)
+
+	color_ := "fill:red;stroke:red"
+	yOffset := this.calcYOffsetByPrice(price)
+
+	for i := 0; i < len(times); i++ {
+		oneTime := times[i]
+		text := values[i]
+
+		xIdx := this.calcXIdxByDatetime(&oneTime)
+		xOffset := this.calcXOffsetByIdx(xIdx)
+		this.svgCanvas.Text(xOffset, yOffset, text, color_)
+	}
 }
 
 func (this *Canvas) drawOneBar(bar bar.Bar) {

@@ -96,7 +96,7 @@ func Run() {
 
 				barseries := base.InitBarManagerWithSymbol(ins)
 
-				c.Init(ins, barseries)
+				c.Init(ins, barseries, oneProject.Account)
 				oneProject.AllStrategy = append(oneProject.AllStrategy, c)
 				oneProject.MapStrategy[c.Key()] = c
 			}
@@ -188,8 +188,8 @@ func (this *Quant) handleOneBar(dgram *provider.Datagram) {
 		for _, oneProject := range DefaultQuant.Projects {
 
 			if xbase.CasinoDicingGame {
-				/// TODO
-				oneProject.Account.DiceHandleOrderWithDiceRoll(nil, newBar.Dice)
+				allPendingOrder := base.GetAllPendingDicingGameOrder()
+				oneProject.Account.DiceHandleOrdersWithBar(allPendingOrder, newBar)
 			}
 			for _, oneStrategy := range oneProject.AllStrategy {
 				if oneStrategy.Match(dgram.Symbol) {

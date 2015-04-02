@@ -6,18 +6,12 @@ import (
 	"time"
 )
 
-const (
-	enable_safe_mode = true
-)
-
 /*
 	implement interface:
 	1. IIndicator
-
 */
 
-// Casino Dicing Game
-type DicePnl struct {
+type BaseIndicator struct {
 	Name      string
 	Symbol    string
 	StartTime time.Time
@@ -26,7 +20,6 @@ type DicePnl struct {
 	Data      []float64
 	Color     int
 
-	TotalData       []float64
 	MapDatetimeData map[int]float64 // map[seconds]value
 	Total           float64
 
@@ -37,7 +30,7 @@ type DicePnl struct {
 	drawEndIdx   int
 }
 
-func (this *DicePnl) Keys() []time.Time {
+func (this *BaseIndicator) Keys() []time.Time {
 	if enable_safe_mode {
 		all := []time.Time{}
 		for _, item := range this.DateTime {
@@ -48,7 +41,7 @@ func (this *DicePnl) Keys() []time.Time {
 	return this.DateTime
 }
 
-func (this *DicePnl) Values() []float64 {
+func (this *BaseIndicator) Values() []float64 {
 	if enable_safe_mode {
 		all := []float64{}
 		for _, item := range this.Data {
@@ -59,11 +52,11 @@ func (this *DicePnl) Values() []float64 {
 	return this.Data
 }
 
-func (this *DicePnl) Count() int {
+func (this *BaseIndicator) Count() int {
 	return len(this.Data)
 }
 
-func (this *DicePnl) Contains(datetime *time.Time) bool {
+func (this *BaseIndicator) Contains(datetime *time.Time) bool {
 	if this.Index(datetime) == -1 {
 		return false
 	} else {
@@ -71,7 +64,7 @@ func (this *DicePnl) Contains(datetime *time.Time) bool {
 	}
 }
 
-func (this *DicePnl) Index(datetime *time.Time) int {
+func (this *BaseIndicator) Index(datetime *time.Time) int {
 	for idx, item := range this.DateTime {
 		if item.Equal(*datetime) {
 			return idx
@@ -80,7 +73,7 @@ func (this *DicePnl) Index(datetime *time.Time) int {
 	return -1
 }
 
-func (this *DicePnl) ValueAtTime(datetime *time.Time) float64 {
+func (this *BaseIndicator) ValueAtTime(datetime *time.Time) float64 {
 
 	idx := this.Index(datetime)
 	if idx >= 0 {
@@ -92,7 +85,7 @@ func (this *DicePnl) ValueAtTime(datetime *time.Time) float64 {
 	}
 }
 
-func (this *DicePnl) ValueAtIndex(index int) float64 {
+func (this *BaseIndicator) ValueAtIndex(index int) float64 {
 	if index >= len(this.Data) || index < 0 {
 		fmt.Println("OutOfArray: %v %v", len(this.Data), index)
 		panic(index)
@@ -100,21 +93,21 @@ func (this *DicePnl) ValueAtIndex(index int) float64 {
 	return this.Data[index]
 }
 
-func NewDicePnl(amt float64) *DicePnl {
-	s := &DicePnl{}
+func NewBaseIndicator(amt float64) *BaseIndicator {
+	s := &BaseIndicator{}
 	s.Init(0)
 	s.Total = amt
 	return s
 }
 
-func (this *DicePnl) Init(color int) {
+func (this *BaseIndicator) Init(color int) {
 	this.DateTime = []time.Time{}
 	this.Data = []float64{}
 	this.MapDatetimeData = map[int]float64{}
 	this.Color = color
 }
 
-func (this *DicePnl) Match(symbol string) bool {
+func (this *BaseIndicator) Match(symbol string) bool {
 	if this.Symbol == symbol {
 		return true
 	} else {
@@ -122,15 +115,15 @@ func (this *DicePnl) Match(symbol string) bool {
 	}
 }
 
-func (this *DicePnl) Now() time.Time {
+func (this *BaseIndicator) Now() time.Time {
 	return this.EndTime
 }
 
 // pnl may be negative
 
-func (this *DicePnl) UpdatePnl(datetime *time.Time, pnl float64) {
+func (this *BaseIndicator) UpdatePnl(datetime *time.Time, pnl float64) {
 	if debug {
-		fmt.Println("DicePnl.Append:", pnl)
+		fmt.Println("BaseIndicator.Append:", pnl)
 	}
 
 	if len(this.Data) == 0 {
@@ -154,15 +147,14 @@ func (this *DicePnl) UpdatePnl(datetime *time.Time, pnl float64) {
 
 	this.DateTime = append(this.DateTime, *datetime)
 	this.Data = append(this.Data, pnl)
-	this.TotalData = append(this.TotalData, this.Total)
 }
 
 // indicator.IIndicator.OnMeasure
 
 // X cordirate [datetime count], Y cordirate [min, max, num, percent]
-func (this *DicePnl) OnMeasure(start, end time.Time) (int, float64, float64, int, float64) {
+func (this *BaseIndicator) OnMeasure(start, end time.Time) (int, float64, float64, int, float64) {
 	if debug {
-		fmt.Println("DicePnl ", this.Name, "symbol", this.Symbol, "OnMeasure")
+		fmt.Println("BaseIndicator ", this.Name, "symbol", this.Symbol, "OnMeasure")
 	}
 	this.drawStart = start
 	this.drawEnd = end
@@ -200,34 +192,20 @@ func (this *DicePnl) OnMeasure(start, end time.Time) (int, float64, float64, int
 	}
 
 	if debug {
-		fmt.Println("DicePnl OnMeasure", num, min, max, 100, 100)
+		fmt.Println("BaseIndicator OnMeasure", num, min, max, 100, 100)
 	}
 
 	return num, min, max, 100, 100
 }
 
 // indicator.IIndicator.OnDraw(ICanvas)
-func (this *DicePnl) OnDraw(canvas xbase.ICanvas) {
-	if len(this.DateTime) == 0 {
-		return
-	}
-
-	if debug {
-		fmt.Println("DicePnl", this.Name, "symbol", this.Symbol, "onDraw")
-		fmt.Println("DicePnl onDraw", " start:", this.drawStartIdx, " end:", this.drawEndIdx)
-	}
-
-	pnlResult := []string{}
-	for i := 0; i < len(this.Data); i++ {
-		result := fmt.Sprintf("%d(%+d)", int(this.TotalData[i]), int(this.Data[i]))
-		pnlResult = append(pnlResult, result)
-	}
-	canvas.DrawTextAtPrice(this.DateTime[this.drawStartIdx:this.drawEndIdx], pnlResult, 10.5, this.Color)
+func (this *BaseIndicator) OnDraw(canvas xbase.ICanvas) {
+	fmt.Println("You Should Implement your own onDraw")
 }
 
-func (this *DicePnl) OnLayout() []time.Time {
+func (this *BaseIndicator) OnLayout() []time.Time {
 	if debug {
-		fmt.Println("DicePnl ", this.Name, "symbol", this.Symbol, "OnLayout")
+		fmt.Println("BaseIndicator ", this.Name, "symbol", this.Symbol, "OnLayout")
 	}
 	/*
 	 * Note:

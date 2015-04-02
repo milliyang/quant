@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"fmt"
+	"quant/account"
 	"quant/base"
 	"quant/base/bar"
 	"quant/base/order"
@@ -21,6 +22,7 @@ func init() {
 }
 
 type Strategy struct {
+	Account      *account.Account
 	Name         string
 	Symbol       string
 	BarSeries    *series.BarSeries          `json:"-" `
@@ -29,13 +31,14 @@ type Strategy struct {
 	drawed       bool
 }
 
-func (this *Strategy) Init(symbol string, barSeries *series.BarSeries) {
+func (this *Strategy) Init(symbol string, barSeries *series.BarSeries, ac *account.Account) {
 	if debug {
 		fmt.Println("Strategy.Init()")
 	}
 	this.Name = "Strategy"
 	this.Symbol = symbol
 	this.BarSeries = barSeries
+	this.Account = ac
 
 	this.mapIndicator = map[int][]xbase.IIndecator{}
 	this.drawed = false
@@ -128,7 +131,7 @@ func (this *Strategy) Buy(qty int, remark string) *order.Order {
 }
 
 type IStrategy interface {
-	Init(string, *series.BarSeries)
+	Init(string, *series.BarSeries, *account.Account)
 	Key() string
 	Match(string) bool
 

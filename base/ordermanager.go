@@ -27,3 +27,10 @@ func Get(id int) *order.Order {
 	}
 	return nil
 }
+
+// Get And Clear
+func GetAllPendingDicingGameOrder() []*order.Order {
+	allOrders := dicingNewGameOrder
+	dicingNewGameOrder = []*order.Order{}
+	return allOrders
+}

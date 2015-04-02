@@ -5,10 +5,6 @@ import (
 	"quant/base/order"
 )
 
-var (
-	orderManager = map[int]*order.Order{}
-)
-
 type Account struct {
 	Name     string
 	Position map[string]*Position
