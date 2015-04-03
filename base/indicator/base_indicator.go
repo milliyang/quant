@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+const (
+	enable_safe_mode = true
+	debug            = false
+)
+
 /*
 	implement interface:
 	1. IIndicator
@@ -21,13 +26,15 @@ type BaseIndicator struct {
 	Color     int
 
 	MapDatetimeData map[int]float64 // map[seconds]value
-	Total           float64
 
 	// use between OnMeasure() && OnDraw()
 	drawStart    time.Time
 	drawEnd      time.Time
 	drawStartIdx int
 	drawEndIdx   int
+
+	//
+	IndicatorType int
 }
 
 func (this *BaseIndicator) Keys() []time.Time {
@@ -93,18 +100,12 @@ func (this *BaseIndicator) ValueAtIndex(index int) float64 {
 	return this.Data[index]
 }
 
-func NewBaseIndicator(amt float64) *BaseIndicator {
-	s := &BaseIndicator{}
-	s.Init(0)
-	s.Total = amt
-	return s
-}
-
 func (this *BaseIndicator) Init(color int) {
 	this.DateTime = []time.Time{}
 	this.Data = []float64{}
 	this.MapDatetimeData = map[int]float64{}
 	this.Color = color
+	this.IndicatorType = xbase.IndicatorTypeDayBar
 }
 
 func (this *BaseIndicator) Match(symbol string) bool {
@@ -115,15 +116,17 @@ func (this *BaseIndicator) Match(symbol string) bool {
 	}
 }
 
+func (this *BaseIndicator) GetIndicatorType() int {
+	return this.IndicatorType
+}
+
 func (this *BaseIndicator) Now() time.Time {
 	return this.EndTime
 }
 
-// pnl may be negative
-
-func (this *BaseIndicator) UpdatePnl(datetime *time.Time, pnl float64) {
+func (this *BaseIndicator) UpdateData(datetime *time.Time, value float64) {
 	if debug {
-		fmt.Println("BaseIndicator.Append:", pnl)
+		fmt.Println("BaseIndicator.Append:", value)
 	}
 
 	if len(this.Data) == 0 {
@@ -142,11 +145,9 @@ func (this *BaseIndicator) UpdatePnl(datetime *time.Time, pnl float64) {
 		panic(datetime)
 	}
 
-	this.Total += pnl
-	this.MapDatetimeData[sec] = pnl
-
+	this.MapDatetimeData[sec] = value
 	this.DateTime = append(this.DateTime, *datetime)
-	this.Data = append(this.Data, pnl)
+	this.Data = append(this.Data, value)
 }
 
 // indicator.IIndicator.OnMeasure
@@ -187,7 +188,7 @@ func (this *BaseIndicator) OnMeasure(start, end time.Time) (int, float64, float6
 			min = value
 		}
 		if value > max {
-			value = max
+			max = value
 		}
 	}
 

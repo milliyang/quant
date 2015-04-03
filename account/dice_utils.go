@@ -15,11 +15,13 @@ func (this *Account) DiceHandleOrdersWithBar(orders []*order.Order, bar_ *bar.Ba
 	}
 
 	if len(orders) > 0 {
-		fmt.Println(bar_.DateTime, "PNL:", pnl, bar_.Dice.Total)
-
+		if false {
+			fmt.Println(bar_.DateTime, "PNL:", pnl, bar_.Dice.Total)
+		}
 		this.PnL += float64(pnl)
-		this.PnlIndicator.UpdatePnl(&bar_.DateTime, float64(pnl))
+		this.IndicatorPNL.UpdateData(&bar_.DateTime, float64(pnl))
 	}
+	this.IndicatorPerformance.UpdateData(&bar_.DateTime, float64(pnl))
 }
 
 func (this *Account) diceHandleOrderWithDiceRoll(order_ *order.Order, diceRoll *dice.DiceRoll) int {

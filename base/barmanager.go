@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"quant/base/bar"
 	"quant/base/series"
+	"quant/base/xbase"
 )
 
 func init() {
@@ -19,6 +20,12 @@ var (
 func StoreBarToManager(symbol string, bar_ bar.Bar) {
 	barSeries, ok := BarManager[symbol]
 	if ok {
+
+		// Casino Dicing Game
+		if bar_.Dice != nil {
+			barSeries.IndicatorType = xbase.IndicatorTypeDicingGameBar
+		}
+
 		barSeries.AppendBar(bar_)
 		return
 	} else {

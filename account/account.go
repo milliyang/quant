@@ -18,7 +18,8 @@ type Account struct {
 	PanddingOrders map[int]*order.Order // key:id
 
 	// CasinoDicingGame
-	PnlIndicator *indicator.DicePnl
+	IndicatorPNL         *indicator.DicePNL
+	IndicatorPerformance *indicator.DicePerformance
 }
 
 func NewAccount(name string, amount float64) *Account {
@@ -26,7 +27,8 @@ func NewAccount(name string, amount float64) *Account {
 	acc.Name = name
 	acc.InitialWealth = amount
 	acc.availableAmount = amount
-	acc.PnlIndicator = indicator.NewDicePnl(amount)
+	acc.IndicatorPNL = indicator.NewDicePNL(amount)
+	acc.IndicatorPerformance = indicator.NewDicePerformance(amount)
 	return acc
 }
 

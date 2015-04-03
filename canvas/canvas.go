@@ -27,10 +27,7 @@ func init() {
 	TIME_ORIGIN = time.Date(1970, time.January, 1, 0, 0, 0, 0, time.Local)
 
 	if xbase.CasinoDicingGame {
-		WIDTH_FOR_100_DAY_BAR = 2000
-		HEIGTH_DEFAULT = 2000
-
-		WIDTH_FOR_100_DAY_BAR = WIDTH_FOR_100_DAY_BAR * 4
+		WIDTH_FOR_100_DAY_BAR = 2000 * 4
 	}
 }
 
@@ -40,6 +37,12 @@ type Canvas struct {
 	indicators []xbase.IIndecator
 	svgCanvas  *svg.SVG
 	buffer     *bytes.Buffer
+
+	indicatorType    int
+	widthFor100Day   int
+	heightForDefault int
+	magifyFactor     int
+	magifyFactorF    float64
 
 	xNum      int
 	yMin      float64
@@ -61,14 +64,27 @@ type Canvas struct {
 	mapTimeIdx map[int]int
 }
 
-func NewCanvas() *Canvas {
+func NewCanvas(indicatorType int) *Canvas {
 	self := &Canvas{}
 	self.buffer = new(bytes.Buffer)
 	self.svgCanvas = svg.New(self.buffer)
 	self.finished = false
+	self.indicatorType = indicatorType
+
+	self.widthFor100Day = WIDTH_FOR_100_DAY_BAR
+	self.heightForDefault = HEIGTH_DEFAULT
 
 	self.rectWidth = WIDTH_FOR_100_DAY_BAR
 	self.rectHeight = HEIGTH_DEFAULT
+
+	self.magifyFactor = MAGNIFY_FACTOR
+	self.magifyFactorF = MAGNIFY_FACTOR_F
+
+	fmt.Println("canvas indicatorType:", self.indicatorType)
+	if self.indicatorType == xbase.IndicatorTypeDicingGameBar {
+		self.widthFor100Day = 2000 * 4
+		self.heightForDefault = 2000
+	}
 
 	self.xNum = 0
 	self.yNum = 0
@@ -113,7 +129,7 @@ func (this *Canvas) prepareDrawing() {
 	this.xBaseTime = this.indicators[this.xBaseIdx].OnLayout()
 
 	// Calc Rect Width
-	this.rectWidth = (len(this.xBaseTime)/DAY100 + 1) * WIDTH_FOR_100_DAY_BAR
+	this.rectWidth = (len(this.xBaseTime)/DAY100 + 1) * this.widthFor100Day
 
 	this.drawItemX = len(this.xBaseTime) + 1
 	this.drawStepX = this.rectWidth / (this.drawItemX)
@@ -126,11 +142,23 @@ func (this *Canvas) prepareDrawing() {
 	fmt.Println("yMax:", this.yMax, " yMin:", this.yMin)
 
 	// Hacking for Casino Dicing Game
-	if xbase.CasinoDicingGame {
+	if this.indicatorType == xbase.IndicatorTypeDicingGameBar {
 		this.yMin = 1
+		this.yMax = 18
+	} else if this.indicatorType == xbase.IndicatorTypePerformance {
+		if this.yMax > 1000 {
+			this.magifyFactor = 1
+			this.magifyFactorF = 1
+		} else if this.yMax > 100 {
+			this.magifyFactor = 10
+			this.magifyFactorF = 10
+		}
 	}
 
-	priceRange := (this.yMax*1.1 - this.yMin*0.9) * 100.0
+	fmt.Println("this.yMin", this.yMin)
+	fmt.Println("this.yMax", this.yMax)
+
+	priceRange := (this.yMax*1.1 - this.yMin*0.9) * this.magifyFactorF
 
 	// Calc Rect Height
 	this.drawStepY = 0
@@ -146,9 +174,6 @@ func (this *Canvas) prepareDrawing() {
 
 	this.barWidth = int(float64(this.drawStepX) * 0.66)
 	this.barWidthHalf = int(float64(this.drawStepX) * 0.33)
-
-	// fmt.Println("yMax1.1:", this.yMax*1.1, " yMin0.9:", this.yMin*0.9, " priceRange", priceRange)
-	// fmt.Println("xStep:", this.drawStepX, " yStep:", this.drawStepY)
 }
 
 func (this *Canvas) GetResult() string {
@@ -169,10 +194,9 @@ func (this *Canvas) startDrawing() {
 	}
 
 	// CasinoDicingGame Line for [1,2,3,4,5,6]
-	if xbase.CasinoDicingGame {
+	// if xbase.CasinoDicingGame {
+	if this.indicatorType == xbase.IndicatorTypeDicingGameBar {
 		for i := 1.0; i < 19; i = i + 1.0 {
-
-			// yOffset := this.rectHeight - int((i-this.yMin*0.9)*100*float64(this.drawStepY))
 			yOffset := this.calcYOffsetByPrice(i)
 			if i <= 10 {
 				this.svgCanvas.Line(0, yOffset, this.rectWidth, yOffset, "fill:none;stroke:green")
@@ -180,8 +204,12 @@ func (this *Canvas) startDrawing() {
 				this.svgCanvas.Line(0, yOffset, this.rectWidth, yOffset, "fill:none;stroke:red")
 			}
 		}
+	} else if this.indicatorType == xbase.IndicatorTypePerformance {
+		for i := 0; i < this.drawItemY; i += 100 {
+			this.svgCanvas.Line(0, i*this.drawStepY, this.rectWidth, i*this.drawStepY, "fill:none;stroke:white")
+		}
 	} else {
-		for i := 0; i < this.drawItemY; i += 10 {
+		for i := 0; i < this.drawItemY; i += 100 {
 			this.svgCanvas.Line(0, i*this.drawStepY, this.rectWidth, i*this.drawStepY, "fill:none;stroke:white")
 		}
 
@@ -194,8 +222,8 @@ func (this *Canvas) startDrawing() {
 	x := []int{}
 	y := []int{}
 	for idx, value := range values {
-		x = append(x, idx*MAGNIFY_FACTOR)
-		y = append(y, h-int(value*MAGNIFY_FACTOR_F))
+		x = append(x, idx*this.magifyFactor)
+		y = append(y, h-int(value*this.magifyFactorF))
 	}
 	this.svgCanvas.Polygon(x, y, "fill:none;stroke:black")
 	*/
@@ -306,7 +334,8 @@ func (this *Canvas) DrawBar(bars []bar.Bar, color int) {
 		}
 	}
 
-	if xbase.CasinoDicingGame && acc != nil {
+	// if xbase.CasinoDicingGame && acc != nil {
+	if false && (this.indicatorType == xbase.IndicatorTypeDicingGameBar) && acc != nil {
 		utils.CheckCasinoPoint(acc)
 		utils.CheckRandom(acc)
 	}
@@ -407,34 +436,23 @@ func (this *Canvas) drawOneDiceBar(bar bar.Bar) {
 	B = float64(bar.Dice.Rolls[1])
 	C = float64(bar.Dice.Rolls[2])
 
-	var barHeight int
-	var lowerPrice float64
-
-	barColor := "fill:red;stroke:red"
-
-	barHeight = int((C - A) * 100 * float64(this.drawStepY))
-	if barHeight == 0 {
-		barHeight = 1
-	}
-	lowerPrice = A
-	yOffset := this.calcYOffsetByPrice(lowerPrice)
-
 	xIdx := this.calcXIdxByDatetime(&bar.DateTime)
 	xOffset := this.calcXOffsetByIdx(xIdx)
-	this.svgCanvas.Rect(xOffset-this.barWidthHalf, yOffset-barHeight, this.barWidth, barHeight, barColor)
 
 	// draw circle
 	AA := this.calcYOffsetByPrice(A)
 	this.svgCanvas.Circle(xOffset, AA, 5, "fill:red;stroke:yellow")
+	this.svgCanvas.Text(xOffset, AA, fmt.Sprintf("face:%d", int(A)), "fill:red;stroke:red")
 
 	BB := this.calcYOffsetByPrice(B)
 	this.svgCanvas.Circle(xOffset, BB, 5, "fill:green;stroke:yellow")
+	this.svgCanvas.Text(xOffset, BB, fmt.Sprintf("face:%d", int(B)), "fill:red;stroke:red")
 
 	CC := this.calcYOffsetByPrice(C)
 	this.svgCanvas.Circle(xOffset, CC, 5, "fill:blue;stroke:yellow")
+	this.svgCanvas.Text(xOffset, CC, fmt.Sprintf("face:%d", int(C)), "fill:red;stroke:red")
 
 	// (1,2,3)
-
 	comment := fmt.Sprintf("(%d,%d,%d)", bar.Dice.Rolls[0], bar.Dice.Rolls[1], bar.Dice.Rolls[2])
 
 	this.drawCasinoBigSmallText(xOffset, int64(A+B+C), comment)
@@ -448,7 +466,7 @@ func (this *Canvas) calcYOffsetByPrice(price float64) int {
 	// 		price = price + 1
 	// 	}
 	// }
-	yOffset := this.rectHeight - int((price-this.yMin*0.9)*100*float64(this.drawStepY))
+	yOffset := this.rectHeight - int((price-this.yMin*0.9)*this.magifyFactorF*float64(this.drawStepY))
 	return yOffset
 }
 

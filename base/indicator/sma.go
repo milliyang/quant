@@ -8,10 +8,6 @@ import (
 	"time"
 )
 
-const (
-	debug = false
-)
-
 // Simple Moving Average
 type SMA struct {
 	series.FloatSeries

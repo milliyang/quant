@@ -94,15 +94,24 @@ func (this *Strategy) DoSvgDrawing() []string {
 	if !this.drawed {
 		this.drawed = true
 
-		for _, indicatorSlice := range this.mapIndicator {
+		for i := 0; i < len(this.mapIndicator); i++ {
+			indicatorSlice := this.mapIndicator[i]
+			indicatorType := xbase.IndicatorTypeDayBar
+			for _, oneIndicator := range indicatorSlice {
+				type_ := oneIndicator.GetIndicatorType()
+				if type_ > indicatorType {
+					indicatorType = type_
+				}
+			}
 
-			newCanvas := canvas.NewCanvas()
+			newCanvas := canvas.NewCanvas(indicatorType)
 			this.drawCanvas = append(this.drawCanvas, newCanvas)
 
 			// do drawing
 			for _, oneIndicator := range indicatorSlice {
 				newCanvas.Draw(oneIndicator)
 			}
+
 		}
 	}
 

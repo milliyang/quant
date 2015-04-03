@@ -37,6 +37,9 @@ type FloatSeries struct {
 	drawStartIdx int
 	drawEndIdx   int
 
+	//
+	IndicatorType int
+
 	// Casino Dicing Game
 	casinoDicingGameFlag bool
 }
@@ -116,6 +119,7 @@ func (this *FloatSeries) Init(parent xbase.ISeries, color int) {
 	this.MapDatetimeData = map[int]float64{}
 	this.InnerParent = parent
 	this.Color = color
+	this.IndicatorType = xbase.IndicatorTypeDayBar
 
 	// [GoBug Tag00001]??
 	//
@@ -124,6 +128,10 @@ func (this *FloatSeries) Init(parent xbase.ISeries, color int) {
 	// if parent != nil {
 	// 	parent.AddChild(this)
 	// }
+}
+
+func (this *FloatSeries) GetIndicatorType() int {
+	return this.IndicatorType
 }
 
 func (this *FloatSeries) InitWorkaround(parent xbase.ISeries, color int) {

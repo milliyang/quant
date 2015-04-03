@@ -30,6 +30,8 @@ type BarSeries struct {
 	drawEndTime   time.Time
 	drawStartIdx  int
 	drawEndIdx    int
+	//
+	IndicatorType int
 }
 
 func (this *BarSeries) Keys() []time.Time {
@@ -92,6 +94,10 @@ func NewBarSeries() *BarSeries {
 	return s
 }
 
+func (this *BarSeries) GetIndicatorType() int {
+	return this.IndicatorType
+}
+
 func (this *BarSeries) Init(parent xbase.ISeries) {
 	this.DateTime = []time.Time{}
 	this.bars = []bar.Bar{}
@@ -99,6 +105,7 @@ func (this *BarSeries) Init(parent xbase.ISeries) {
 
 	this.InnerParent = parent
 	this.barField = bar.Close // default use close
+	this.IndicatorType = xbase.IndicatorTypeDayBar
 }
 
 func (this *BarSeries) Match(symbol string) bool {
