@@ -13,7 +13,7 @@ const (
 	yyyymmddLayout = "%4d-%02d-%02d"
 	floatLayout    = "%d.00"
 
-	ROUND = 600
+	ROUND = 2 * 60 * 8 // 2 * 60 minute * 8hour
 
 	FACES       = 6
 	NUM_OF_DICE = 3
@@ -100,11 +100,6 @@ func (this *DiceProvider) Receive(outChan chan *Datagram) error {
 		//utils.JsonPrint(data)
 
 		allDiceRolls = append(allDiceRolls, diceRoll)
-	}
-
-	if false {
-		utils.CheckCasinoPoint(allDiceRolls)
-		utils.CheckRandom(allDiceRolls)
 	}
 
 	// close the channel at last, so that range Chan can finish!!

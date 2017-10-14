@@ -3,6 +3,7 @@ package account
 import (
 	"fmt"
 	"github.com/milliyang/dice"
+	"os"
 	"quant/base/bar"
 	"quant/base/order"
 	"quant/base/xbase"
@@ -22,6 +23,15 @@ func (this *Account) DiceHandleOrdersWithBar(orders []*order.Order, bar_ *bar.Ba
 		this.IndicatorPNL.UpdateData(&bar_.DateTime, float64(pnl))
 	}
 	this.IndicatorPerformance.UpdateData(&bar_.DateTime, float64(pnl))
+
+	this.LastWin = pnl > 0
+
+	if this.InitialWealth+this.PnL <= 0 {
+		fmt.Println(this.ToString())
+		fmt.Println("Your are bankrupt!!!")
+		os.Exit(1)
+		return
+	}
 }
 
 func (this *Account) diceHandleOrderWithDiceRoll(order_ *order.Order, diceRoll *dice.DiceRoll) int {

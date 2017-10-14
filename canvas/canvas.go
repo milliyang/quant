@@ -27,7 +27,8 @@ func init() {
 	TIME_ORIGIN = time.Date(1970, time.January, 1, 0, 0, 0, 0, time.Local)
 
 	if xbase.CasinoDicingGame {
-		WIDTH_FOR_100_DAY_BAR = 2000 * 4
+		WIDTH_FOR_100_DAY_BAR = 3000 * 4
+		HEIGTH_DEFAULT = 500
 	}
 }
 
@@ -79,12 +80,6 @@ func NewCanvas(indicatorType int) *Canvas {
 
 	self.magifyFactor = MAGNIFY_FACTOR
 	self.magifyFactorF = MAGNIFY_FACTOR_F
-
-	fmt.Println("canvas indicatorType:", self.indicatorType)
-	if self.indicatorType == xbase.IndicatorTypeDicingGameBar {
-		self.widthFor100Day = 2000 * 4
-		self.heightForDefault = 2000
-	}
 
 	self.xNum = 0
 	self.yNum = 0
@@ -441,17 +436,37 @@ func (this *Canvas) drawOneDiceBar(bar bar.Bar) {
 
 	// draw circle
 	AA := this.calcYOffsetByPrice(A)
-	this.svgCanvas.Circle(xOffset, AA, 5, "fill:red;stroke:yellow")
-	this.svgCanvas.Text(xOffset, AA, fmt.Sprintf("face:%d", int(A)), "fill:red;stroke:red")
-
 	BB := this.calcYOffsetByPrice(B)
-	this.svgCanvas.Circle(xOffset, BB, 5, "fill:green;stroke:yellow")
-	this.svgCanvas.Text(xOffset, BB, fmt.Sprintf("face:%d", int(B)), "fill:red;stroke:red")
-
 	CC := this.calcYOffsetByPrice(C)
-	this.svgCanvas.Circle(xOffset, CC, 5, "fill:blue;stroke:yellow")
-	this.svgCanvas.Text(xOffset, CC, fmt.Sprintf("face:%d", int(C)), "fill:red;stroke:red")
 
+	if bar.Dice.IsTriple() {
+		this.svgCanvas.Circle(xOffset, AA, 5, "fill:red;stroke:yellow")
+		this.svgCanvas.Text(xOffset, AA, fmt.Sprintf("Face:%d++", int(A)), "fill:red;stroke:red")
+	} else {
+		if A == B {
+			this.svgCanvas.Circle(xOffset, AA, 5, "fill:red;stroke:yellow")
+			this.svgCanvas.Text(xOffset, AA, fmt.Sprintf("Face:%d+", int(A)), "fill:red;stroke:red")
+
+			this.svgCanvas.Circle(xOffset, CC, 5, "fill:blue;stroke:yellow")
+			this.svgCanvas.Text(xOffset, CC, fmt.Sprintf("Face:%d", int(C)), "fill:red;stroke:red")
+		} else if B == C {
+			// B == C
+			this.svgCanvas.Circle(xOffset, AA, 5, "fill:red;stroke:yellow")
+			this.svgCanvas.Text(xOffset, AA, fmt.Sprintf("Face:%d", int(A)), "fill:red;stroke:red")
+
+			this.svgCanvas.Circle(xOffset, CC, 5, "fill:blue;stroke:yellow")
+			this.svgCanvas.Text(xOffset, CC, fmt.Sprintf("Face:%d+", int(C)), "fill:red;stroke:red")
+		} else {
+			this.svgCanvas.Circle(xOffset, AA, 5, "fill:red;stroke:yellow")
+			this.svgCanvas.Text(xOffset, AA, fmt.Sprintf("Face:%d", int(A)), "fill:red;stroke:red")
+
+			this.svgCanvas.Circle(xOffset, BB, 5, "fill:green;stroke:yellow")
+			this.svgCanvas.Text(xOffset, BB, fmt.Sprintf("Face:%d", int(B)), "fill:red;stroke:red")
+
+			this.svgCanvas.Circle(xOffset, CC, 5, "fill:blue;stroke:yellow")
+			this.svgCanvas.Text(xOffset, CC, fmt.Sprintf("Face:%d", int(C)), "fill:red;stroke:red")
+		}
+	}
 	// (1,2,3)
 	comment := fmt.Sprintf("(%d,%d,%d)", bar.Dice.Rolls[0], bar.Dice.Rolls[1], bar.Dice.Rolls[2])
 
@@ -489,10 +504,10 @@ func (this *Canvas) drawCasinoBigSmallText(xOffset int, total int64, comment str
 	yOffset := 0
 
 	if total >= 11 {
-		yOffset = this.calcYOffsetByPrice(10.8)
+		yOffset = this.calcYOffsetByPrice(11.1)
 	} else {
 		_color = "fill:green;stroke:green"
-		yOffset = this.calcYOffsetByPrice(10.1)
+		yOffset = this.calcYOffsetByPrice(9.8)
 	}
 	this.svgCanvas.Text(xOffset, yOffset, strconv.FormatInt(total, 10)+comment, _color)
 }

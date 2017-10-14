@@ -224,3 +224,7 @@ func (this *BarSeries) OnDraw(canvas xbase.ICanvas) {
 	// canvas.DrawSpark(table,[]time.Time, []float64,color)
 	// canvas.DrawShit(table, []time.Time, []float64,color)
 }
+
+func (this *BarSeries) GetBars() []bar.Bar {
+	return this.bars
+}

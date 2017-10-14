@@ -1,6 +1,7 @@
 package account
 
 import (
+	"fmt"
 	"quant/base/indicator"
 	"quant/base/order"
 )
@@ -20,6 +21,7 @@ type Account struct {
 	// CasinoDicingGame
 	IndicatorPNL         *indicator.DicePNL
 	IndicatorPerformance *indicator.DicePerformance
+	LastWin              bool
 }
 
 func NewAccount(name string, amount float64) *Account {
@@ -150,4 +152,16 @@ func (this *Account) handleFilledOrder(order_ *order.Order) bool {
 	} else {
 		panic(order_)
 	}
+}
+
+func (this *Account) ToString() string {
+	result := ""
+	result += fmt.Sprintln("Account:\t", this.Name)
+	result += fmt.Sprintln("InitialWealth:\t", this.InitialWealth)
+	result += fmt.Sprintln("P and L:\t", this.PnL, "\n")
+
+	result += fmt.Sprintln("Round:\t\t", this.IndicatorPerformance.Count())
+	result += fmt.Sprintln("HistoryMin:\t", this.IndicatorPerformance.HistoryMin)
+	result += fmt.Sprintln("HistoryMax:\t", this.IndicatorPerformance.HistoryMax)
+	return result
 }

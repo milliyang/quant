@@ -9,14 +9,20 @@ import (
 
 // Casino Dicing Game
 type DicePerformance struct {
-	Total float64
+	InitializeWealth float64
+	Total            float64
+	HistoryMax       float64
+	HistoryMin       float64
 	BaseIndicator
 }
 
 func NewDicePerformance(amt float64) *DicePerformance {
 	s := &DicePerformance{}
 	s.Init(0)
+	s.InitializeWealth = amt
 	s.Total = amt
+	s.HistoryMin = amt
+	s.HistoryMax = amt
 
 	// override
 	s.IndicatorType = xbase.IndicatorTypePerformance
@@ -30,6 +36,12 @@ func (this *DicePerformance) UpdateData(datetime *time.Time, pnl float64) {
 	}
 	this.Total += pnl
 
+	if this.Total > this.HistoryMax {
+		this.HistoryMax = this.Total
+	}
+	if this.Total < this.HistoryMin {
+		this.HistoryMin = this.Total
+	}
 	this.BaseIndicator.UpdateData(datetime, this.Total)
 }
 
@@ -49,7 +61,7 @@ func (this *DicePerformance) OnDraw(canvas xbase.ICanvas) {
 		startTime := this.DateTime[0]
 		endTime := this.DateTime[len(this.DateTime)-1]
 		dateTimeStartAndEnd := []time.Time{startTime, endTime}
-		value := []float64{5000.0, 5000.0}
+		value := []float64{this.InitializeWealth, this.InitializeWealth}
 		canvas.DrawLine(dateTimeStartAndEnd, value, color.Gold)
 	}
 

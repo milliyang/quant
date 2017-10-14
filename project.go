@@ -23,11 +23,11 @@ type Project struct {
 	Account *account.Account
 }
 
-func NewProject() *Project {
+func NewProject(acc *account.Account) *Project {
 	project := Project{}
 	project.AllStrategy = []strategy.IStrategy{}
 	project.MapStrategy = map[string]strategy.IStrategy{}
-	project.Account = account.NewAccount("LeoYang", 5000)
+	project.Account = acc
 	registerProject(&project)
 	return &project
 }
